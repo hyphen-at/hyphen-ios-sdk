@@ -83,14 +83,15 @@ public struct HyphenFileLogHandler: LogHandler {
         stream = try HyphenFileHandlerOutputStream(localFile: url)
     }
 
-    public func log(level: Logger.Level,
-                    message: Logger.Message,
-                    metadata: Logger.Metadata?,
-                    source _: String,
-                    file _: String,
-                    function _: String,
-                    line _: UInt)
-    {
+    public func log(
+        level: Logger.Level,
+        message: Logger.Message,
+        metadata: Logger.Metadata?,
+        source _: String,
+        file _: String,
+        function _: String,
+        line _: UInt
+    ) {
         let prettyMetadata = metadata?.isEmpty ?? true
             ? self.prettyMetadata
             : prettify(self.metadata.merging(metadata!, uniquingKeysWith: { _, new in new }))
