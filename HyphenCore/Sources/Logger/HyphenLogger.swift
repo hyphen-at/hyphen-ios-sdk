@@ -116,3 +116,27 @@ public struct HyphenFileLogHandler: LogHandler {
         }
     }
 }
+
+@_spi(HyphenInternal)
+public final class HyphenLogger: NSObject {
+    public static let shared: HyphenLogger = .init()
+
+    public let logger = Logger(label: "at.hyphen.ios.sdk.Logger")
+
+    override private init() {
+        let documentsDirectory = try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+        let logFileName = "hyphen_sdk.log"
+
+        let logFileURL = documentsDirectory.appendingPathComponent(logFileName)
+        let fileLogger = try! HyphenFileLogging(to: logFileURL)
+
+        LoggingSystem.bootstrap { label in
+            let handlers: [LogHandler] = [
+                HyphenFileLogHandler(label: label, fileLogger: fileLogger),
+                StreamLogHandler.standardOutput(label: label),
+            ]
+
+            return MultiplexLogHandler(handlers)
+        }
+    }
+}
