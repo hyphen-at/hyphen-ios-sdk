@@ -17,6 +17,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
         .package(url: "https://github.com/firebase/firebase-ios-sdk.git", .upToNextMajor(from: "10.11.0")),
+        .package(url: "https://github.com/google/GoogleSignIn-iOS", .upToNextMajor(from: "7.0.0")),
     ],
     targets: [
         .target(
@@ -31,6 +32,7 @@ let package = Package(
             dependencies: [
                 .target(name: "HyphenCore"),
                 .product(name: "FirebaseAuth", package: "firebase-ios-sdk"),
+                .product(name: "GoogleSignIn", package: "GoogleSignIn-iOS"),
             ],
             path: "HyphenAuthenticate/Sources"
         ),
