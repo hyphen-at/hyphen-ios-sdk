@@ -10,17 +10,17 @@ public final class HyphenAuthenticateAppDelegate: NSObject {
 
     override private init() {}
 
-    func application(_: UIApplication, willFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?) {
-        HyphenLogger.shared.logger.info("[HyphenAAD] Check firebase app initialization...")
+    public func application(_: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]? = nil) {
+        HyphenLogger.shared.logger.info("Check firebase app initialization...")
 
         if FirebaseApp.app() == nil {
-            HyphenLogger.shared.logger.info("[HyphenAAD] Firebase App is not configurated. Initialize firebase app...")
+            HyphenLogger.shared.logger.info("Firebase App is not configurated. Initialize firebase app...")
             FirebaseApp.configure()
-            HyphenLogger.shared.logger.info("[HyphenAAD] Firebase App configuration successfully.")
+            HyphenLogger.shared.logger.info("Firebase App configuration successfully.")
         }
     }
 
-    func application(
+    public func application(
         _: UIApplication,
         open url: URL,
         options _: [UIApplication.OpenURLOptionsKey: Any] = [:]
