@@ -28,6 +28,7 @@ let package = Package(
         .package(url: "https://github.com/google/GoogleSignIn-iOS", .upToNextMajor(from: "7.0.0")),
         .package(url: "https://github.com/Moya/Moya.git", .upToNextMajor(from: "15.0.0")),
         .package(url: "https://github.com/SomeRandomiOSDev/CBORCoding.git", from: "1.0.0"),
+        .package(url: "https://github.com/Kitura/BlueECC", branch: "master"),
     ],
     targets: [
         .target(
@@ -44,7 +45,8 @@ let package = Package(
                 .target(name: "HyphenNetwork"),
                 .product(name: "FirebaseAuth", package: "firebase-ios-sdk"),
                 .product(name: "GoogleSignIn", package: "GoogleSignIn-iOS"),
-                .product(name: "CBORCoding", package: "CBORCoding"),
+                // .product(name: "CBORCoding", package: "CBORCoding"),
+                .product(name: "CryptorECC", package: "BlueECC")
             ],
             path: "HyphenAuthenticate/Sources"
         ),
