@@ -26,7 +26,24 @@ public final class Hyphen: NSObject {
         UserDefaults.standard.set(credential.refreshToken, forKey: "at.hyphen.sdk.credential.refreshToken")
     }
 
+    @_spi(HyphenInternal)
+    public func getCredential() -> HyphenCredential {
+        let accessToken = UserDefaults.standard.object(forKey: "at.hyphen.sdk.credential.accessToken") as! String
+        let refreshToken = UserDefaults.standard.object(forKey: "at.hyphen.sdk.credential.refreshToken") as! String
+
+        return HyphenCredential(accessToken: accessToken, refreshToken: refreshToken)
+    }
+
     public func isCredentialExist() -> Bool {
         UserDefaults.standard.value(forKey: "at.hyphen.sdk.credential.accessToken") != nil && UserDefaults.standard.value(forKey: "at.hyphen.sdk.credential.refreshToken") != nil
+    }
+
+    // TODO: Remove this
+    public func saveWalletAddress(_ address: String) {
+        UserDefaults.standard.set(address, forKey: "at.hyphen.sdk.wallet.address")
+    }
+
+    public func getWalletAddress() -> String? {
+        UserDefaults.standard.object(forKey: "at.hyphen.sdk.wallet.address") as? String
     }
 }

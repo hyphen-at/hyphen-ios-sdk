@@ -16,6 +16,15 @@ public final class HyphenNetworking: NSObject {
         return provider
     }()
 
+    @_spi(HyphenInternal)
+    public lazy var signProvider: MoyaProvider<SignAPI> = {
+        let provider = MoyaProvider<SignAPI>(
+            session: Session(interceptor: RequiredHeaderInterceptor())
+            // ∂plugins: [NetworkLoggerPlugin()]
+        )
+        return provider
+    }()
+
     public func signIn(token: String) async throws -> HyphenResponseSignIn {
         let requestPayload = HyphenRequestSignIn(method: "firebase", token: token, chainName: "flow-testnet")
         let response: HyphenResponseSignIn = try await authProvider.async.request(.signIn(payload: requestPayload))
@@ -28,5 +37,15 @@ public final class HyphenNetworking: NSObject {
         let response: HyphenResponseSignIn = try await authProvider.async.request(.signUp(payload: requestPayload))
 
         return response
+    }
+
+    public func signTransactionWithServerKey(message: String) async throws -> HyphenSignResult {
+        print(message)
+        return try await signProvider.async.request(.signTransactionWithServerKey(message: message))
+    }
+
+    public func signTransactionWithPayMasterKey(message: String) async throws -> HyphenSignResult {
+        print(message)
+        return try await signProvider.async.request(.signTransactionWithPayMasterKey(message: message))
     }
 }

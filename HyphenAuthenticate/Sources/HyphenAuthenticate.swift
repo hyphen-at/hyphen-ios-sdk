@@ -35,6 +35,7 @@ public final class HyphenAuthenticate: NSObject {
             do {
                 let result = try await HyphenNetworking.shared.signIn(token: idToken)
                 Hyphen.shared.saveCredential(result.credentials)
+                Hyphen.shared.saveWalletAddress(result.account.addresses.first!.address)
                 print(result)
             } catch {
                 if let convertedMoyaError = error as? MoyaError,
@@ -73,6 +74,7 @@ public final class HyphenAuthenticate: NSObject {
                             do {
                                 let result = try await HyphenNetworking.shared.signUp(token: idToken, userKey: userKey)
                                 Hyphen.shared.saveCredential(result.credentials)
+                                Hyphen.shared.saveWalletAddress(result.account.addresses.first!.address)
 
                                 print(result)
                             } catch {
