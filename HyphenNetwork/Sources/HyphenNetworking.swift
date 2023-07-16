@@ -1,4 +1,5 @@
 import Foundation
+import HyphenCore
 import Moya
 
 public final class HyphenNetworking: NSObject {
@@ -18,6 +19,13 @@ public final class HyphenNetworking: NSObject {
     public func signIn(token: String) async throws -> HyphenResponseSignIn {
         let requestPayload = HyphenRequestSignIn(method: "firebase", token: token, chainName: "flow-testnet")
         let response: HyphenResponseSignIn = try await authProvider.async.request(.signIn(payload: requestPayload))
+
+        return response
+    }
+
+    public func signUp(token: String, userKey: HyphenUserKey) async throws -> HyphenResponseSignIn {
+        let requestPayload = HyphenRequestSignUp(method: "firebase", token: token, chainName: "flow-testnet", userKey: userKey)
+        let response: HyphenResponseSignIn = try await authProvider.async.request(.signUp(payload: requestPayload))
 
         return response
     }

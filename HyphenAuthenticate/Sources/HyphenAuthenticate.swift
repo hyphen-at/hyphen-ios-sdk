@@ -41,23 +41,66 @@ public final class HyphenAuthenticate: NSObject {
                 {
                     let errorBody = String(data: response.data, encoding: .utf8)
                     if errorBody?.contains("please sign up") == true {
-                        HyphenLogger.shared.logger.info("Generating keypair...")
+                        HyphenLogger.shared.logger.info("Generating keypair derived from secure enclave...")
 
-                        let p256PrivateKey = try ECPrivateKey.make(for: .prime256v1)
-                        let publicKeyPemFormat = try p256PrivateKey.extractPublicKey().pemString
-                        let base64FormatAsn1String = publicKeyPemFormat
-                            .replacingOccurrences(of: "\n", with: "")
-                            .replacingOccurrences(of: "-----BEGIN PUBLIC KEY-----", with: "")
-                            .replacingOccurrences(of: "-----END PUBLIC KEY-----", with: "")
+                        var error: Unmanaged<CFError>?
+                        if let cfdata = SecKeyCopyExternalRepresentation(HyphenCryptography.getPubKey(), &error) {
+                            let data: Data = cfdata as Data
+                            let publicKey = data.hexEncodedString()
 
-                        let publicKeyRawValue = try ASN1Decoder.decode(asn1: Data(base64Encoded: base64FormatAsn1String)!)
-                        var publicKey = publicKeyRawValue.data.items!.last!.data.primitive!.hexEncodedString()
-                        for _ in 0 ..< 4 {
-                            publicKey.remove(at: publicKey.startIndex)
+                            print(publicKey)
+                            print(publicKey.count)
+
+                            let startIdx = publicKey.index(publicKey.startIndex, offsetBy: 2)
+                            let publicKeyResult = String(publicKey[startIdx...])
+
+                            let userKey = await HyphenUserKey(
+                                type: .device,
+                                device: HyphenDevice(
+                                    name: UIDevice.current.name,
+                                    osName: .iOS,
+                                    osVersion: HyphenDeviceInformation.osVersion,
+                                    deviceManufacturer: "Apple",
+                                    deviceModel: HyphenDeviceInformation.modelName,
+                                    lang: Locale.preferredLanguages[0],
+                                    type: .mobile
+                                ),
+                                publicKey: publicKey,
+                                wallet: nil
+                            )
+
+                            do {
+                                let result = try await HyphenNetworking.shared.signUp(token: idToken, userKey: userKey)
+                                print(result.credentials)
+                            } catch {
+                                if let convertedMoyaError = error as? MoyaError,
+                                   let response = convertedMoyaError.response
+                                {
+                                    let errorBody = String(data: response.data, encoding: .utf8)
+                                    print(errorBody)
+                                }
+                            }
                         }
 
-                        print(publicKey)
-                        print(publicKey.count)
+//                        let p256PrivateKey = try ECPrivateKey.make(for: .prime256v1)
+//                        let publicKeyPemFormat = try p256PrivateKey.extractPublicKey().pemString
+//                        let base64FormatAsn1String = publicKeyPemFormat
+//                            .replacingOccurrences(of: "\n", with: "")
+//                            .replacingOccurrences(of: "-----BEGIN PUBLIC KEY-----", with: "")
+//                            .replacingOccurrences(of: "-----END PUBLIC KEY-----", with: "")
+//
+//                        let publicKeyRawValue = try ASN1Decoder.decode(asn1: Data(base64Encoded: base64FormatAsn1String)!)
+//                        var publicKey = publicKeyRawValue.data.items!.last!.data.primitive!.hexEncodedString()
+//                        for _ in 0 ..< 4 {
+//                            publicKey.remove(at: publicKey.startIndex)
+//                        }
+//
+//                        print(publicKey)
+//                        print(publicKey.count)
+//
+//                        let accessControl = SecAccessControlCreateWithFlags(nil, kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly, .userPresence, nil)
+//
+//
                         // generate passkey, and required sign up
 //                        print("UserID -> \(user.uid)")
                         // await createPassKeyAndSignUp(userId: user.uid, email: user.email ?? "")

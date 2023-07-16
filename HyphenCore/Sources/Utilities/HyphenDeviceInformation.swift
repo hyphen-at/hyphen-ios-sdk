@@ -1,6 +1,11 @@
 import UIKit
 
 public enum HyphenDeviceInformation {
+    public static let osVersion: String = {
+        let os = ProcessInfo.processInfo.operatingSystemVersion
+        return String(os.majorVersion) + "." + String(os.minorVersion) + "." + String(os.patchVersion)
+    }()
+
     public static let modelName: String = {
         var systemInfo = utsname()
         uname(&systemInfo)

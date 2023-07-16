@@ -1,6 +1,6 @@
 import Foundation
 
-public struct HyphenDevice: Codable, Equatable, Sendable {
+public struct HyphenDevice: Codable, Equatable, Sendable, Hashable {
     public let name: String
     public let osName: HyphenOSName
     public let osVersion: String
