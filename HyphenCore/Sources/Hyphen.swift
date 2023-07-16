@@ -20,4 +20,13 @@ public final class Hyphen: NSObject {
             return _appSecret
         }
     }
+
+    public func saveCredential(_ credential: HyphenCredential) {
+        UserDefaults.standard.set(credential.accessToken, forKey: "at.hyphen.sdk.credential.accessToken")
+        UserDefaults.standard.set(credential.refreshToken, forKey: "at.hyphen.sdk.credential.refreshToken")
+    }
+
+    public func isCredentialExist() -> Bool {
+        UserDefaults.standard.value(forKey: "at.hyphen.sdk.credential.accessToken") != nil && UserDefaults.standard.value(forKey: "at.hyphen.sdk.credential.refreshToken") != nil
+    }
 }

@@ -33,8 +33,9 @@ public final class HyphenAuthenticate: NSObject {
             // process hyphen authenticate process
 
             do {
-                let hyphenAuthenticateResult = try await HyphenNetworking.shared.signIn(token: idToken)
-                print(hyphenAuthenticateResult)
+                let result = try await HyphenNetworking.shared.signIn(token: idToken)
+                Hyphen.shared.saveCredential(result.credentials)
+                print(result)
             } catch {
                 if let convertedMoyaError = error as? MoyaError,
                    let response = convertedMoyaError.response
@@ -65,13 +66,15 @@ public final class HyphenAuthenticate: NSObject {
                                     lang: Locale.preferredLanguages[0],
                                     type: .mobile
                                 ),
-                                publicKey: publicKey,
+                                publicKey: publicKeyResult,
                                 wallet: nil
                             )
 
                             do {
                                 let result = try await HyphenNetworking.shared.signUp(token: idToken, userKey: userKey)
-                                print(result.credentials)
+                                Hyphen.shared.saveCredential(result.credentials)
+
+                                print(result)
                             } catch {
                                 if let convertedMoyaError = error as? MoyaError,
                                    let response = convertedMoyaError.response
@@ -79,6 +82,8 @@ public final class HyphenAuthenticate: NSObject {
                                     let errorBody = String(data: response.data, encoding: .utf8)
                                     print(errorBody)
                                 }
+
+                                throw error
                             }
                         }
 
