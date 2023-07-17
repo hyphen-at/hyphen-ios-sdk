@@ -81,8 +81,13 @@ public class HyphenCryptography: NSObject {
 
     public class func signData(_ data: Data) -> Data? {
         let algorithm = SecKeyAlgorithm.ecdsaSignatureMessageX962SHA256
-        let derSignature = SecKeyCreateSignature(getPrivKey(), algorithm, data as CFData, nil) as! Data
-        return try! P256.Signing.ECDSASignature(derRepresentation: derSignature).rawRepresentation
+        let derSignature = SecKeyCreateSignature(getPrivKey(), algorithm, data as CFData, nil) as? Data
+
+        if let sig = derSignature {
+            return try! P256.Signing.ECDSASignature(derRepresentation: sig).rawRepresentation
+        } else {
+            return nil
+        }
     }
 
     public class func deleteKey() {
