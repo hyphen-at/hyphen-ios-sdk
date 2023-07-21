@@ -2,6 +2,6 @@ import Foundation
 import Moya
 
 public enum AuthAPI {
-    case signIn(payload: HyphenRequestSignIn)
+    case signIn2FA(payload: HyphenRequestSignIn2FA)
     case signUp(payload: HyphenRequestSignUp)
 }

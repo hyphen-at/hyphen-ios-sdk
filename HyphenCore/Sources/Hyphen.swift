@@ -1,3 +1,4 @@
+import FirebaseMessaging
 import Foundation
 
 public final class Hyphen: NSObject {
@@ -5,7 +6,7 @@ public final class Hyphen: NSObject {
 
     override private init() {}
 
-    public var _appSecret: String = ""
+    private var _appSecret: String = ""
 
     public var appSecret: String {
         set {
@@ -18,6 +19,19 @@ public final class Hyphen: NSObject {
         }
         get {
             return _appSecret
+        }
+    }
+
+    private var _apnsToken: Data? = nil
+
+    public var apnsToken: Data? {
+        set {
+            _apnsToken = newValue
+            Messaging.messaging().apnsToken = newValue
+        }
+        @available(*, unavailable)
+        get {
+            _apnsToken
         }
     }
 

@@ -39,6 +39,7 @@ let package = Package(
             name: "HyphenCore",
             dependencies: [
                 .product(name: "Logging", package: "swift-log"),
+                .product(name: "FirebaseMessaging", package: "firebase-ios-sdk"),
             ],
             path: "HyphenCore/Sources"
         ),
