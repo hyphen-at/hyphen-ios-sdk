@@ -2,7 +2,6 @@ import CryptoKit
 import Foundation
 import Security
 
-@_spi(HyphenInternal)
 public class HyphenCryptography: NSObject {
     override private init() {}
 
@@ -57,6 +56,7 @@ public class HyphenCryptography: NSObject {
         return pubKey
     }
 
+    @_spi(HyphenInternal)
     public class func getPrivKey() -> SecKey {
         let query: [String: Any] = [
             kSecClass as String: kSecClassKey,
@@ -107,12 +107,14 @@ public class HyphenCryptography: NSObject {
         }
     }
 
+    @_spi(HyphenInternal)
     public class func generateKeyNoEnclave() {
         var error: Unmanaged<CFError>?
         // if device has not secure enclave, create normal keypair and save normal keychain
         _ = SecKeyCreateRandomKey(NonEnclaveAttribute as CFDictionary, &error)
     }
 
+    @_spi(HyphenInternal)
     public class func generateKey() {
         var error: Unmanaged<CFError>?
         var privKey = SecKeyCreateRandomKey(EnclaveAttribute as CFDictionary, &error) // create Secure Enclave keypair
@@ -121,45 +123,45 @@ public class HyphenCryptography: NSObject {
             privKey = SecKeyCreateRandomKey(NonEnclaveAttribute as CFDictionary, &error)
         }
     }
-//
-//    public class func encrypt(input: String) -> String? {
-//        let pubKey: SecKey = getPubKey()
-//        print(pubKey)
-//        var error: Unmanaged<CFError>?
-//
-//        let plain: CFData = input.data(using: .utf8)! as CFData
-//        let encData = SecKeyCreateEncryptedData(pubKey, SecKeyAlgorithm.eciesEncryptionStandardX963SHA256AESGCM, plain, &error)
-//        var tdata: Data
-//        if encData == nil {
-//            print("encrypt error!!!")
-//            return nil
-//        } else {
-//            tdata = encData! as Data
-//        }
-//
-//        let b64result = tdata.base64EncodedString()
-//        return b64result
-//    }
-//
-//    public class func decrypt(input: String) -> String? {
-//        let privKey: SecKey = getPrivKey()
-//        print(privKey)
-//        guard let encData = Data(base64Encoded: input) else {
-//            print("decrypt error!!!")
-//            return nil
-//        }
-//        var error: Unmanaged<CFError>?
-//        let decData = SecKeyCreateDecryptedData(privKey, SecKeyAlgorithm.eciesEncryptionStandardX963SHA256AESGCM, encData as CFData, &error)
-//        var tdata: Data
-//
-//        if decData == nil {
-//            print("decrypt error!!!")
-//            return nil
-//        } else {
-//            tdata = decData! as Data
-//        }
-//
-//        let decResult = String(data: tdata, encoding: .utf8)!
-//        return decResult
-//    }
+
+    @_spi(HyphenInternal)
+    public class func encrypt(input: String) -> String? {
+        let pubKey: SecKey = getPubKey()
+        var error: Unmanaged<CFError>?
+
+        let plain: CFData = input.data(using: .utf8)! as CFData
+        let encData = SecKeyCreateEncryptedData(pubKey, SecKeyAlgorithm.eciesEncryptionStandardX963SHA256AESGCM, plain, &error)
+        var tdata: Data
+        if encData == nil {
+            print("encrypt error!!!")
+            return nil
+        } else {
+            tdata = encData! as Data
+        }
+
+        let b64result = tdata.base64EncodedString()
+        return b64result
+    }
+
+    @_spi(HyphenInternal)
+    public class func decrypt(input: String) -> String? {
+        let privKey: SecKey = getPrivKey()
+        guard let encData = Data(base64Encoded: input) else {
+            print("decrypt error!!!")
+            return nil
+        }
+        var error: Unmanaged<CFError>?
+        let decData = SecKeyCreateDecryptedData(privKey, SecKeyAlgorithm.eciesEncryptionStandardX963SHA256AESGCM, encData as CFData, &error)
+        var tdata: Data
+
+        if decData == nil {
+            print("decrypt error!!!")
+            return nil
+        } else {
+            tdata = decData! as Data
+        }
+
+        let decResult = String(data: tdata, encoding: .utf8)!
+        return decResult
+    }
 }
