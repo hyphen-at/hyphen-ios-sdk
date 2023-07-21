@@ -1,6 +1,5 @@
-import ASN1Kit
 import AuthenticationServices
-import CryptorECC
+// import CryptorECC
 // import CBORCoding
 import FirebaseAuth
 import Foundation
@@ -23,12 +22,12 @@ public final class HyphenAuthenticate: NSObject {
             let authResult = try await Auth.auth().signIn(with: authCredential)
             HyphenLogger.shared.logger.info("Add firebase user...")
 
-            HyphenLogger.shared.logger.info("Firebase authenticate successfully. User -> \(authResult.user.displayName ?? "")(\(authResult.user.email ?? ""))")
+            HyphenLogger.shared.logger.debug("Firebase authenticate successfully. User -> \(authResult.user.displayName ?? "")(\(authResult.user.email ?? ""))")
 
             let user = authResult.user
             let idToken = try await user.getIDToken()
 
-            HyphenLogger.shared.logger.info("FIDToken -> \(idToken)")
+            HyphenLogger.shared.logger.debug("FIDToken -> \(idToken)")
 
             // process hyphen authenticate process
 
@@ -43,8 +42,6 @@ public final class HyphenAuthenticate: NSObject {
                 {
                     let errorBody = String(data: response.data, encoding: .utf8)
                     if errorBody?.contains("please sign up") == true {
-                        HyphenLogger.shared.logger.info("Generating keypair derived from secure enclave...")
-
                         var error: Unmanaged<CFError>?
                         if let cfdata = SecKeyCopyExternalRepresentation(HyphenCryptography.getPubKey(), &error) {
                             let data: Data = cfdata as Data
