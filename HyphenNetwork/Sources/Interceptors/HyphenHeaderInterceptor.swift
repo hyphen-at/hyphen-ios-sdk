@@ -3,7 +3,7 @@ import Foundation
 import Moya
 import UIKit
 
-final class RequiredHeaderInterceptor: RequestInterceptor {
+final class HyphenHeaderInterceptor: RequestInterceptor {
     func adapt(_ urlRequest: URLRequest, for _: Session, completion: @escaping (Result<URLRequest, Error>) -> Void) {
         let mutableUrlRequest = ((urlRequest as NSURLRequest).mutableCopy() as? NSMutableURLRequest)!
         mutableUrlRequest.setValue(Hyphen.shared.appSecret, forHTTPHeaderField: "X-Hyphen-App-Secret")
