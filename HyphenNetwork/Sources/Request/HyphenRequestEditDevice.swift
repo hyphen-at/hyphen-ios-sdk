@@ -1,16 +1,25 @@
 import Foundation
 
 public struct HyphenRequestEditDevice: Codable {
-    public let id: String
-    public let pushToken: String
-    public let name: String
-    public let osName: String
-    public let osVersion: String
-    public let deviceManufacturer: String
-    public let deviceModel: String
-    public let lang: String
+    public let id: String?
+    public let pushToken: String?
+    public let name: String?
+    public let osName: String?
+    public let osVersion: String?
+    public let deviceManufacturer: String?
+    public let deviceModel: String?
+    public let lang: String?
 
-    public init(id: String, pushToken: String, name: String, osName: String, osVersion: String, deviceManufacturer: String, deviceModel: String, lang: String) {
+    public init(
+        id: String? = nil,
+        pushToken: String? = nil,
+        name: String? = nil,
+        osName: String? = nil,
+        osVersion: String? = nil,
+        deviceManufacturer: String? = nil,
+        deviceModel: String? = nil,
+        lang: String? = nil
+    ) {
         self.id = id
         self.pushToken = pushToken
         self.name = name

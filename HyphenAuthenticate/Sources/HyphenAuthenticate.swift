@@ -19,16 +19,18 @@ public final class HyphenAuthenticate: NSObject {
     private var _account: HyphenAccount? = nil
 
     override private init() {}
-    
+
     public func getAccount() async throws -> HyphenAccount {
-        if let account = self._account {
+        if let account = _account {
             return account
         }
-        
+
+        try await updateDeviceInformation()
+
         let accountResult = try await HyphenNetworking.shared.getMyAccount()
-        
-        self._account = accountResult
-        
+
+        _account = accountResult
+
         return accountResult
     }
 
@@ -55,7 +57,7 @@ public final class HyphenAuthenticate: NSObject {
                     HyphenLogger.shared.logger.critical("Hyphen SDK error occured. unexpected error. getHyphenUserKey() == nil")
                     throw HyphenSdkError.internalSdkError
                 }
-                
+
                 try await requestSignIn2FA(idToken: idToken, userKey: hyphenUserKey)
             } else {
                 HyphenLogger.shared.logger.info("Request authenticate challenge...")
@@ -64,7 +66,7 @@ public final class HyphenAuthenticate: NSObject {
                     HyphenLogger.shared.logger.critical("Hyphen SDK error occured. unexpected error. getHyphenUserKey() == nil")
                     throw HyphenSdkError.internalSdkError
                 }
-                
+
                 do {
                     let challengeRequest = try await HyphenNetworking.shared.signInChallenge(
                         payload: HyphenRequestSignInChallenge(
@@ -73,13 +75,13 @@ public final class HyphenAuthenticate: NSObject {
                             publicKey: hyphenUserKey.publicKey
                         )
                     )
-                    
+
                     let challengeData = challengeRequest.challengeData
                     guard let challengeDataSignature = HyphenCryptography.signData(challengeData.data(using: .utf8)!)?.hexEncodedString() else {
                         HyphenLogger.shared.logger.error("Signing challenge data failed. Maybe user denied biometric authenticate permission deny or mismatch password (biometric method).")
                         return
                     }
-                    
+
                     let challengeRespondRequest = try await HyphenNetworking.shared.signInChallengeRespond(
                         payload: HyphenRequestSignInChallengeRespond(
                             challengeType: "deviceKey",
@@ -87,7 +89,7 @@ public final class HyphenAuthenticate: NSObject {
                             deviceKey: HyphenRequestSignInChallengeRespond.DeviceKey(signature: challengeDataSignature)
                         )
                     )
-                    
+
                     _account = challengeRespondRequest.account
                     Hyphen.shared.saveCredential(challengeRespondRequest.credentials)
                 } catch {
@@ -154,7 +156,23 @@ public final class HyphenAuthenticate: NSObject {
 //                        }
         }
     }
-    
+
+    private func updateDeviceInformation() async throws {
+        guard let userKey = try await getHyphenUserKey() else {
+            HyphenLogger.shared.logger.critical("Hyphen SDK error occured. unexpected error. getHyphenUserKey() == nil")
+            throw HyphenSdkError.internalSdkError
+        }
+
+        _ = try await HyphenNetworking.shared.editDevice(
+            publicKey: userKey.publicKey,
+            payload: HyphenRequestEditDevice(
+                pushToken: userKey.device?.pushToken ?? ""
+            )
+        )
+
+        HyphenLogger.shared.logger.info("Update device information successfully.")
+    }
+
     private func requestSignIn2FA(idToken: String, userKey: HyphenUserKey) async throws {
         do {
             HyphenLogger.shared.logger.info("Request Hyphen 2FA authenticate...")
@@ -184,9 +202,9 @@ public final class HyphenAuthenticate: NSObject {
                     )
 
                     _account = result.account
-                    
+
                     Hyphen.shared.saveCredential(result.credentials)
-                    
+
                     print(result)
                 }
             }
