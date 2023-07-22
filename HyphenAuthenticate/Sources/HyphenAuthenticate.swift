@@ -65,21 +65,21 @@ public final class HyphenAuthenticate: NSObject {
                     throw HyphenSdkError.internalSdkError
                 }
                 
-                let challengeRequest = try await HyphenNetworking.shared.signInChallenge(
-                    payload: HyphenRequestSignInChallenge(
-                        challengeType: "deviceKey",
-                        request: HyphenRequestSignInChallenge.Request(method: "firebase", token: idToken, chainName: "flow-testnet"),
-                        publicKey: hyphenUserKey.publicKey
-                    )
-                )
-                
-                let challengeData = challengeRequest.challengeData
-                guard let challengeDataSignature = HyphenCryptography.signData(challengeData.data(using: .utf8)!)?.hexEncodedString() else {
-                    HyphenLogger.shared.logger.error("Signing challenge data failed. Maybe user denied biometric authenticate permission deny or mismatch password (biometric method).")
-                    return
-                }
-                
                 do {
+                    let challengeRequest = try await HyphenNetworking.shared.signInChallenge(
+                        payload: HyphenRequestSignInChallenge(
+                            challengeType: "deviceKey",
+                            request: HyphenRequestSignInChallenge.Request(method: "firebase", token: idToken, chainName: "flow-testnet"),
+                            publicKey: hyphenUserKey.publicKey
+                        )
+                    )
+                    
+                    let challengeData = challengeRequest.challengeData
+                    guard let challengeDataSignature = HyphenCryptography.signData(challengeData.data(using: .utf8)!)?.hexEncodedString() else {
+                        HyphenLogger.shared.logger.error("Signing challenge data failed. Maybe user denied biometric authenticate permission deny or mismatch password (biometric method).")
+                        return
+                    }
+                    
                     let challengeRespondRequest = try await HyphenNetworking.shared.signInChallengeRespond(
                         payload: HyphenRequestSignInChallengeRespond(
                             challengeType: "deviceKey",
@@ -91,6 +91,7 @@ public final class HyphenAuthenticate: NSObject {
                     _account = challengeRespondRequest.account
                     Hyphen.shared.saveCredential(challengeRespondRequest.credentials)
                 } catch {
+                    HyphenLogger.shared.logger.error("Request challenge failed. Attempting 2FA request for another device...")
                     try await requestSignIn2FA(idToken: idToken, userKey: hyphenUserKey)
                 }
             }
@@ -163,6 +164,7 @@ public final class HyphenAuthenticate: NSObject {
                     userKey: userKey
                 )
             )
+            HyphenLogger.shared.logger.info("Request Hyphen 2FA authenticate successfully. Please check your another device.")
         } catch {
             if let convertedMoyaError = error as? MoyaError,
                let response = convertedMoyaError.response
