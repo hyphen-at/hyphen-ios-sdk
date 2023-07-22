@@ -55,41 +55,8 @@ public final class HyphenAuthenticate: NSObject {
                     HyphenLogger.shared.logger.critical("Hyphen SDK error occured. unexpected error. getHyphenUserKey() == nil")
                     throw HyphenSdkError.internalSdkError
                 }
-
-                do {
-                    HyphenLogger.shared.logger.info("Request Hyphen 2FA authenticate...")
-                    _ = try await HyphenNetworking.shared.signIn2FA(
-                        payload: HyphenRequestSignIn2FA(
-                            request: HyphenRequestSignIn2FA.Request(method: "firebase", token: idToken, chainName: "flow-testnet"),
-                            userKey: hyphenUserKey
-                        )
-                    )
-                } catch {
-                    if let convertedMoyaError = error as? MoyaError,
-                       let response = convertedMoyaError.response
-                    {
-                        let errorBody = String(data: response.data, encoding: .utf8)
-                        if errorBody?.contains("please sign up") == true {
-                            HyphenLogger.shared.logger.error("Request Hyphen 2FA authenticate... - Failed -> Sign up needed.")
-                            HyphenLogger.shared.logger.info("Request Hyphen Sign up...")
-
-                            let result = try await HyphenNetworking.shared.signUp(
-                                payload: HyphenRequestSignUp(
-                                    method: "firebase",
-                                    token: idToken,
-                                    chainName: "flow-testnet",
-                                    userKey: hyphenUserKey
-                                )
-                            )
-
-                            _account = result.account
-                            
-                            Hyphen.shared.saveCredential(result.credentials)
-                            
-                            print(result)
-                        }
-                    }
-                }
+                
+                try await requestSignIn2FA(idToken: idToken, userKey: hyphenUserKey)
             } else {
                 HyphenLogger.shared.logger.info("Request authenticate challenge...")
 
@@ -112,16 +79,20 @@ public final class HyphenAuthenticate: NSObject {
                     return
                 }
                 
-                let challengeRespondRequest = try await HyphenNetworking.shared.signInChallengeRespond(
-                    payload: HyphenRequestSignInChallengeRespond(
-                        challengeType: "deviceKey",
-                        challengeData: challengeData,
-                        deviceKey: HyphenRequestSignInChallengeRespond.DeviceKey(signature: challengeDataSignature)
+                do {
+                    let challengeRespondRequest = try await HyphenNetworking.shared.signInChallengeRespond(
+                        payload: HyphenRequestSignInChallengeRespond(
+                            challengeType: "deviceKey",
+                            challengeData: challengeData,
+                            deviceKey: HyphenRequestSignInChallengeRespond.DeviceKey(signature: challengeDataSignature)
+                        )
                     )
-                )
-                
-                _account = challengeRespondRequest.account
-                Hyphen.shared.saveCredential(challengeRespondRequest.credentials)
+                    
+                    _account = challengeRespondRequest.account
+                    Hyphen.shared.saveCredential(challengeRespondRequest.credentials)
+                } catch {
+                    try await requestSignIn2FA(idToken: idToken, userKey: hyphenUserKey)
+                }
             }
 
             // process hyphen authenticate process
@@ -180,6 +151,43 @@ public final class HyphenAuthenticate: NSObject {
 //                                throw error
 //                            }
 //                        }
+        }
+    }
+    
+    private func requestSignIn2FA(idToken: String, userKey: HyphenUserKey) async throws {
+        do {
+            HyphenLogger.shared.logger.info("Request Hyphen 2FA authenticate...")
+            _ = try await HyphenNetworking.shared.signIn2FA(
+                payload: HyphenRequestSignIn2FA(
+                    request: HyphenRequestSignIn2FA.Request(method: "firebase", token: idToken, chainName: "flow-testnet"),
+                    userKey: userKey
+                )
+            )
+        } catch {
+            if let convertedMoyaError = error as? MoyaError,
+               let response = convertedMoyaError.response
+            {
+                let errorBody = String(data: response.data, encoding: .utf8)
+                if errorBody?.contains("please sign up") == true {
+                    HyphenLogger.shared.logger.error("Request Hyphen 2FA authenticate... - Failed -> Sign up needed.")
+                    HyphenLogger.shared.logger.info("Request Hyphen Sign up...")
+
+                    let result = try await HyphenNetworking.shared.signUp(
+                        payload: HyphenRequestSignUp(
+                            method: "firebase",
+                            token: idToken,
+                            chainName: "flow-testnet",
+                            userKey: userKey
+                        )
+                    )
+
+                    _account = result.account
+                    
+                    Hyphen.shared.saveCredential(result.credentials)
+                    
+                    print(result)
+                }
+            }
         }
     }
 
