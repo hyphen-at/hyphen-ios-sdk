@@ -25,9 +25,8 @@ public final class HyphenAuthenticate: NSObject {
             return account
         }
 
-        try await updateDeviceInformation()
-
         let accountResult = try await HyphenNetworking.shared.getMyAccount()
+        try await updateDeviceInformation()
 
         _account = accountResult
 
