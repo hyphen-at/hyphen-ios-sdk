@@ -13,32 +13,34 @@ extension AuthAPI: TargetType {
 
     public var path: String {
         switch self {
-        case .signIn(payload: _):
-            return "/auth/v1/signin"
+        case .signIn2FA(payload: _):
+            return "/auth/v1/signin/2fa"
+        case .signInChallenge(payload: _):
+            return "/auth/v1/signin/challenge"
+        case .signInChallengeRespond(payload: _):
+            return "/auth/v1/signin/challenge/respond"
         case .signUp(payload: _):
             return "/auth/v1/signup"
         }
     }
 
     public var method: Moya.Method {
-        switch self {
-        case .signIn(payload: _):
-            fallthrough
-        case .signUp(payload: _):
-            return .post
-        }
+        .post
     }
 
     public var sampleData: Data {
-        switch self {
-        default:
-            return "".data(using: .utf8)!
-        }
+        "".data(using: .utf8)!
     }
 
     public var task: Task {
         switch self {
-        case let .signIn(payload: payload):
+        case let .signIn2FA(payload: payload):
+            let json = try! JSONEncoder().encode(payload)
+            return .requestData(json)
+        case let .signInChallenge(payload: payload):
+            let json = try! JSONEncoder().encode(payload)
+            return .requestData(json)
+        case let .signInChallengeRespond(payload: payload):
             let json = try! JSONEncoder().encode(payload)
             return .requestData(json)
         case let .signUp(payload: payload):
