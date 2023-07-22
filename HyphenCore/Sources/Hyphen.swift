@@ -1,10 +1,17 @@
 import FirebaseMessaging
 import Foundation
+import SecureDefaults
 
 public final class Hyphen: NSObject {
     public static let shared: Hyphen = .init()
 
-    override private init() {}
+    override private init() {
+        if !SecureDefaults.shared.isKeyCreated {
+            SecureDefaults.shared.password = UUID().uuidString
+        }
+    }
+
+    private var hyphenAccount: HyphenAccount? = nil
 
     private var _appSecret: String = ""
 
@@ -36,28 +43,29 @@ public final class Hyphen: NSObject {
     }
 
     public func saveCredential(_ credential: HyphenCredential) {
-        UserDefaults.standard.set(credential.accessToken, forKey: "at.hyphen.sdk.credential.accessToken")
-        UserDefaults.standard.set(credential.refreshToken, forKey: "at.hyphen.sdk.credential.refreshToken")
+        SecureDefaults.standard.set(credential.accessToken, forKey: "at.hyphen.sdk.credential.accessToken")
+        SecureDefaults.standard.set(credential.refreshToken, forKey: "at.hyphen.sdk.credential.refreshToken")
     }
 
-    @_spi(HyphenInternal)
+    @_spi(HyphenInternalOnlyNetworking)
     public func getCredential() -> HyphenCredential {
-        let accessToken = UserDefaults.standard.object(forKey: "at.hyphen.sdk.credential.accessToken") as! String
-        let refreshToken = UserDefaults.standard.object(forKey: "at.hyphen.sdk.credential.refreshToken") as! String
+        let accessToken = SecureDefaults.standard.object(forKey: "at.hyphen.sdk.credential.accessToken") as! String
+        let refreshToken = SecureDefaults.standard.object(forKey: "at.hyphen.sdk.credential.refreshToken") as! String
 
         return HyphenCredential(accessToken: accessToken, refreshToken: refreshToken)
     }
 
+    @_spi(HyphenInternalOnlyNetworking)
     public func isCredentialExist() -> Bool {
-        UserDefaults.standard.value(forKey: "at.hyphen.sdk.credential.accessToken") != nil && UserDefaults.standard.value(forKey: "at.hyphen.sdk.credential.refreshToken") != nil
+        SecureDefaults.standard.value(forKey: "at.hyphen.sdk.credential.accessToken") != nil && SecureDefaults.standard.value(forKey: "at.hyphen.sdk.credential.refreshToken") != nil
     }
 
     // TODO: Remove this
     public func saveWalletAddress(_ address: String) {
-        UserDefaults.standard.set(address, forKey: "at.hyphen.sdk.wallet.address")
+        SecureDefaults.standard.set(address, forKey: "at.hyphen.sdk.wallet.address")
     }
 
     public func getWalletAddress() -> String? {
-        UserDefaults.standard.object(forKey: "at.hyphen.sdk.wallet.address") as? String
+        SecureDefaults.standard.object(forKey: "at.hyphen.sdk.wallet.address") as? String
     }
 }

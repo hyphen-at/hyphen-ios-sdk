@@ -1,5 +1,5 @@
 import Foundation
-@_spi(HyphenInternal) import HyphenCore
+@_spi(HyphenInternalOnlyNetworking) import HyphenCore
 import Moya
 import UIKit
 

@@ -30,6 +30,7 @@ let package = Package(
         .package(url: "https://github.com/firebase/firebase-ios-sdk.git", .upToNextMajor(from: "10.11.0")),
         .package(url: "https://github.com/google/GoogleSignIn-iOS", .upToNextMajor(from: "7.0.0")),
         .package(url: "https://github.com/Moya/Moya.git", .upToNextMajor(from: "15.0.0")),
+        .package(url: "https://github.com/vpeschenkov/SecureDefaults", .upToNextMajor(from: "1.0.0")),
         // .package(url: "https://github.com/SomeRandomiOSDev/CBORCoding.git", from: "1.0.0"),
         // .package(url: "https://github.com/Kitura/BlueECC", branch: "master"),
         // .package(url: "https://github.com/gematik/ASN1Kit", branch: "main"),
@@ -40,6 +41,7 @@ let package = Package(
             dependencies: [
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "FirebaseMessaging", package: "firebase-ios-sdk"),
+                .product(name: "SecureDefaults", package: "SecureDefaults"),
             ],
             path: "HyphenCore/Sources"
         ),
@@ -49,6 +51,7 @@ let package = Package(
                 .target(name: "HyphenCore"),
                 .target(name: "HyphenNetwork"),
                 .product(name: "FirebaseAuth", package: "firebase-ios-sdk"),
+                .product(name: "FirebaseMessaging", package: "firebase-ios-sdk"),
                 .product(name: "GoogleSignIn", package: "GoogleSignIn-iOS"),
                 .product(name: "Moya", package: "Moya"),
                 // .product(name: "CBORCoding", package: "CBORCoding"),

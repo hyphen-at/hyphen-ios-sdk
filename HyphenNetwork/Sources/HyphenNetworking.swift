@@ -30,4 +30,12 @@ public final class HyphenNetworking: NSObject {
         )
         return provider
     }()
+
+    @_spi(HyphenInternal)
+    public lazy var accountProvider: MoyaProvider<AccountAPI> = {
+        let provider = MoyaProvider<AccountAPI>(
+            session: Session(interceptor: HyphenHeaderInterceptor())
+        )
+        return provider
+    }()
 }

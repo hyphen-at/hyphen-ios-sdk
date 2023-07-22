@@ -2,18 +2,36 @@ import AuthenticationServices
 // import CryptorECC
 // import CBORCoding
 import FirebaseAuth
+import FirebaseMessaging
 import Foundation
 @_spi(HyphenInternal) import HyphenCore
 import HyphenNetwork
 import Moya
 
+typealias Task = _Concurrency.Task
+
 public final class HyphenAuthenticate: NSObject {
     public static let shared: HyphenAuthenticate = .init()
 
-    @_spi(HyphenInternal)
-    public var authorizationCallback: (ASAuthorization) -> Void = { _ in }
+//    @_spi(HyphenInternal)
+//    public var authorizationCallback: (ASAuthorization) -> Void = { _ in }
 
-    override private init() {}
+    private var _account: HyphenAccount? = nil
+    public var account: HyphenAccount? {
+        _account
+    }
+
+    override private init() {
+        super.init()
+
+        Task {
+            do {
+                self._account = try await HyphenNetworking.shared.getMyAccount()
+            } catch {
+                print(error)
+            }
+        }
+    }
 
     public func authenticate(provider method: HyphenAuthenticateMethod) async throws {
         if method == .google {
@@ -29,230 +47,158 @@ public final class HyphenAuthenticate: NSObject {
 
             HyphenLogger.shared.logger.debug("FIDToken -> \(idToken)")
 
-            // process hyphen authenticate process
+            if !HyphenCryptography.isDeviceKeyExist() {
+                HyphenLogger.shared.logger.info("Hyphen device key not found! Generate new device key...")
 
-            do {
-                let result = try await HyphenNetworking.shared.signIn(token: idToken)
-                Hyphen.shared.saveCredential(result.credentials)
-                Hyphen.shared.saveWalletAddress(result.account.addresses.first!.address)
-                print(result)
-            } catch {
-                if let convertedMoyaError = error as? MoyaError,
-                   let response = convertedMoyaError.response
-                {
-                    let errorBody = String(data: response.data, encoding: .utf8)
-                    if errorBody?.contains("please sign up") == true {
-                        var error: Unmanaged<CFError>?
-                        if let cfdata = SecKeyCopyExternalRepresentation(HyphenCryptography.getPubKey(), &error) {
-                            let data: Data = cfdata as Data
-                            let publicKey = data.hexEncodedString()
+                HyphenCryptography.generateKey()
 
-                            print(publicKey)
-                            print(publicKey.count)
+                guard let hyphenUserKey = try await getHyphenUserKey() else {
+                    HyphenLogger.shared.logger.critical("Hyphen SDK error occured. unexpected error. getHyphenUserKey() == nil")
+                    throw HyphenSdkError.internalSdkError
+                }
 
-                            let startIdx = publicKey.index(publicKey.startIndex, offsetBy: 2)
-                            let publicKeyResult = String(publicKey[startIdx...])
+                do {
+                    HyphenLogger.shared.logger.info("Request Hyphen 2FA authenticate...")
+                    _ = try await HyphenNetworking.shared.signIn2FA(
+                        payload: HyphenRequestSignIn2FA(
+                            request: HyphenRequestSignIn2FA.Request(method: "firebase", token: idToken, chainName: "flow-testnet"),
+                            userKey: hyphenUserKey
+                        )
+                    )
+                } catch {
+                    if let convertedMoyaError = error as? MoyaError,
+                       let response = convertedMoyaError.response
+                    {
+                        let errorBody = String(data: response.data, encoding: .utf8)
+                        if errorBody?.contains("please sign up") == true {
+                            HyphenLogger.shared.logger.error("Request Hyphen 2FA authenticate... - Failed -> Sign up needed.")
+                            HyphenLogger.shared.logger.info("Request Hyphen Sign up...")
 
-                            let userKey = await HyphenUserKey(
-                                type: .device,
-                                device: HyphenDevice(
-                                    name: UIDevice.current.name,
-                                    osName: .iOS,
-                                    osVersion: HyphenDeviceInformation.osVersion,
-                                    deviceManufacturer: "Apple",
-                                    deviceModel: HyphenDeviceInformation.modelName,
-                                    lang: Locale.preferredLanguages[0],
-                                    type: .mobile
-                                ),
-                                publicKey: publicKeyResult,
-                                wallet: nil
+                            let result = try await HyphenNetworking.shared.signUp(
+                                payload: HyphenRequestSignUp(
+                                    method: "firebase",
+                                    token: idToken,
+                                    chainName: "flow-testnet",
+                                    userKey: hyphenUserKey
+                                )
                             )
 
-                            do {
-                                let result = try await HyphenNetworking.shared.signUp(token: idToken, userKey: userKey)
-                                Hyphen.shared.saveCredential(result.credentials)
-                                Hyphen.shared.saveWalletAddress(result.account.addresses.first!.address)
-
-                                print(result)
-                            } catch {
-                                if let convertedMoyaError = error as? MoyaError,
-                                   let response = convertedMoyaError.response
-                                {
-                                    let errorBody = String(data: response.data, encoding: .utf8)
-                                    print(errorBody)
-                                }
-
-                                throw error
-                            }
+                            _account = result.account
+                            
+                            print(result)
                         }
-
-//                        let p256PrivateKey = try ECPrivateKey.make(for: .prime256v1)
-//                        let publicKeyPemFormat = try p256PrivateKey.extractPublicKey().pemString
-//                        let base64FormatAsn1String = publicKeyPemFormat
-//                            .replacingOccurrences(of: "\n", with: "")
-//                            .replacingOccurrences(of: "-----BEGIN PUBLIC KEY-----", with: "")
-//                            .replacingOccurrences(of: "-----END PUBLIC KEY-----", with: "")
-//
-//                        let publicKeyRawValue = try ASN1Decoder.decode(asn1: Data(base64Encoded: base64FormatAsn1String)!)
-//                        var publicKey = publicKeyRawValue.data.items!.last!.data.primitive!.hexEncodedString()
-//                        for _ in 0 ..< 4 {
-//                            publicKey.remove(at: publicKey.startIndex)
-//                        }
-//
-//                        print(publicKey)
-//                        print(publicKey.count)
-//
-//                        let accessControl = SecAccessControlCreateWithFlags(nil, kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly, .userPresence, nil)
-//
-//
-                        // generate passkey, and required sign up
-//                        print("UserID -> \(user.uid)")
-                        // await createPassKeyAndSignUp(userId: user.uid, email: user.email ?? "")
                     }
                 }
+            } else {
+                HyphenLogger.shared.logger.info("Request Hyphen 2FA authenticate...")
+
+                guard let hyphenUserKey = try await getHyphenUserKey() else {
+                    HyphenLogger.shared.logger.critical("Hyphen SDK error occured. unexpected error. getHyphenUserKey() == nil")
+                    throw HyphenSdkError.internalSdkError
+                }
+
+                _ = try await HyphenNetworking.shared.signIn2FA(
+                    payload: HyphenRequestSignIn2FA(
+                        request: HyphenRequestSignIn2FA.Request(method: "firebase", token: idToken, chainName: "flow-testnet"),
+                        userKey: hyphenUserKey
+                    )
+                )
             }
+
+            // process hyphen authenticate process
+
+//            do {
+//                let result = try await HyphenNetworking.shared.signIn(token: idToken)
+//                Hyphen.shared.saveCredential(result.credentials)
+//                Hyphen.shared.saveWalletAddress(result.account.addresses.first!.address)
+//                print(result)
+//            } catch {
+//                if let convertedMoyaError = error as? MoyaError,
+//                   let response = convertedMoyaError.response
+//                {
+//                    let errorBody = String(data: response.data, encoding: .utf8)
+//                    if errorBody?.contains("please sign up") == true {
+//                        var error: Unmanaged<CFError>?
+//                        if let cfdata = SecKeyCopyExternalRepresentation(HyphenCryptography.getPubKey(), &error) {
+//                            let data: Data = cfdata as Data
+//                            let publicKey = data.hexEncodedString()
+//
+//                            print(publicKey)
+//                            print(publicKey.count)
+//
+//                            let startIdx = publicKey.index(publicKey.startIndex, offsetBy: 2)
+//                            let publicKeyResult = String(publicKey[startIdx...])
+//
+//                            let userKey = await HyphenUserKey(
+//                                type: .device,
+//                                device: HyphenDevice(
+//                                    name: UIDevice.current.name,
+//                                    osName: .iOS,
+//                                    osVersion: HyphenDeviceInformation.osVersion,
+//                                    deviceManufacturer: "Apple",
+//                                    deviceModel: HyphenDeviceInformation.modelName,
+//                                    lang: Locale.preferredLanguages[0],
+//                                    type: .mobile
+//                                ),
+//                                publicKey: publicKeyResult,
+//                                wallet: nil
+//                            )
+//
+//                            do {
+//                                let result = try await HyphenNetworking.shared.signUp(token: idToken, userKey: userKey)
+//                                Hyphen.shared.saveCredential(result.credentials)
+//                                Hyphen.shared.saveWalletAddress(result.account.addresses.first!.address)
+//
+//                                print(result)
+//                            } catch {
+//                                if let convertedMoyaError = error as? MoyaError,
+//                                   let response = convertedMoyaError.response
+//                                {
+//                                    let errorBody = String(data: response.data, encoding: .utf8)
+//                                    print(errorBody)
+//                                }
+//
+//                                throw error
+//                            }
+//                        }
         }
     }
 
-//    private func createPassKeyAndSignUp(userId: String, email _: String) async {
-//        let challenge = "HelloWorld!".data(using: .utf8)!
-//        let userID = userId.data(using: .utf8)!
-//
-//        if #available(iOS 15.0, *) {
-//            let platformProvider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: "api.dev.hyphen.at")
-//            let assertionRequest = platformProvider.createCredentialAssertionRequest(challenge: challenge)
-//            // let platformKeyRequest = platformProvider.createCredentialRegistrationRequest(challenge: challenge, name: email, userID: userID)
-//
-//            authorizationCallback = { authorization in
-//                if let credential = authorization.credential as? ASAuthorizationPlatformPublicKeyCredentialRegistration {
-//                    let attestationObject = credential.rawAttestationObject!
-//                    let clientDataJSON = credential.rawClientDataJSON
-//                    let credentialID = credential.credentialID
-//
-//                    print(attestationObject.hexEncodedString())
-//                    print(clientDataJSON.hexEncodedString())
-//                    print(credentialID.hexEncodedString())
-//
-//                    let decoder = CBORDecoder()
-//                    let decodedAttestationObject = try! decoder.decode(AttestationObject.self, from: attestationObject)
-//                    let authData = decodedAttestationObject.authData
-//
-//                    var credentialIDLength: UInt16 = 0
-//                    _ = withUnsafeMutableBytes(of: &credentialIDLength) { authData[53 + 30 ... 54 + 30].copyBytes(to: $0) }
-//                    credentialIDLength = credentialIDLength.bigEndian
-//
-//                    let publicKeyData = authData.subdata(in: (55 + 30 + Int(credentialIDLength)) ..< authData.count + 30)
-//                    let publicKeyInformation = try! decoder.decode([Int: QuantumValue].self, from: publicKeyData)
-//
-//                    let keyType = publicKeyInformation[1] // 2 = Elliptic Curve
-//                    let keyAlgorithm = publicKeyInformation[3] // -7 = ECDSA with SHA256
-//                    let keyCurveType = publicKeyInformation[-1] // 1 = P-256
-//
-//                    var publicKey = ""
-//
-//                    switch publicKeyInformation[-2] {
-//                    case let .data(data):
-//                        publicKey += data.hexEncodedString()
-//                        print(data.hexEncodedString()) // Key curve X
-//                    default:
-//                        break
-//                    }
-//
-//                    switch publicKeyInformation[-3] {
-//                    case let .data(data):
-//                        publicKey += data.hexEncodedString()
-//                        print(data.hexEncodedString()) // Key curve Y
-//                    default:
-//                        break
-//                    }
-//
-//                    print("PublicKey -> \(publicKey)")
-//
-    ////                                    else if let credential = authorization.credential as? ASAuthorizationPlatformPublicKeyCredentialAssertion {
-    ////                                        HyphenLogger.shared.logger.info("\(String(data: credential.rawClientDataJSON.base64EncodedData(), encoding: .utf8))")
-    ////                                        HyphenLogger.shared.logger.info("\(String(data: credential.rawAuthenticatorData.base64EncodedData(), encoding: .utf8))")
-    ////                                        HyphenLogger.shared.logger.info("\(String(data: credential.signature.base64EncodedData(), encoding: .utf8))")
-    ////                                    } else {
-    ////                                        // Handle other authentication cases, such as Sign in with Apple.
-    ////                                    }
-//                } else if let credential = authorization.credential as? ASAuthorizationPlatformPublicKeyCredentialAssertion {
-//                    print(credential.signature.hexEncodedString())
-//                    print(credential.signature.base64EncodedString())
-//
-    ////                    let attestedCredentialData = credential.rawAuthenticatorData.subdata(in: 37 ..< credential.rawAuthenticatorData.count)
-    ////                    print(attestedCredentialData.hexEncodedString())
-//                }
-//            }
-//
-//            // let assertionRequest = platformProvider.createCredentialAssertionRequest(challenge: challenge)
-//            let authController = ASAuthorizationController(authorizationRequests: [assertionRequest])
-//            authController.delegate = self
-//            authController.presentationContextProvider = self
-//            authController.performRequests()
-//        } else {
-//            // TODO: LEGACY
-//        }
-//    }
-}
+    private func getHyphenUserKey() async throws -> HyphenUserKey? {
+        let fcmToken = try await Messaging.messaging().token()
 
-//
-//// MARK: - ASAuthorizationControllerDelegate
-//
-// extension HyphenAuthenticate: ASAuthorizationControllerDelegate {
-//    public func authorizationController(controller _: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
-//        if #available(iOS 15.0, *) {
-//            authorizationCallback(authorization)
-//        } else {
-//            // Fallback on earlier versions
-//        }
-//    }
-//
-//    public func authorizationController(controller _: ASAuthorizationController, didCompleteWithError error: Error) {
-//        HyphenLogger.shared.logger.error("\(error)")
-//    }
-// }
-//
-//// MARK: - ASAuthorizationControllerPresentationContextProviding
-//
-// extension HyphenAuthenticate: ASAuthorizationControllerPresentationContextProviding {
-//    public func presentationAnchor(for _: ASAuthorizationController) -> ASPresentationAnchor {
-//        UIApplication.shared.hyphensdk_currentKeyWindow!
-//    }
-// }
-//
-// public extension Data {
-//    var bytes: [UInt8] {
-//        return [UInt8](self)
-//    }
-// }
-//
-// private struct AttestationObject: Codable {
-//    let authData: Data
-//    let fmt: String
-// }
-//
-// enum QuantumValue: Decodable {
-//    case int(Int), string(String), data(Data)
-//
-//    init(from decoder: Decoder) throws {
-//        if let int = try? decoder.singleValueContainer().decode(Int.self) {
-//            self = .int(int)
-//            return
-//        }
-//
-//        if let string = try? decoder.singleValueContainer().decode(String.self) {
-//            self = .string(string)
-//            return
-//        }
-//
-//        if let data = try? decoder.singleValueContainer().decode(Data.self) {
-//            self = .data(data)
-//            return
-//        }
-//
-//        throw QuantumError.missingValue
-//    }
-//
-//    enum QuantumError: Error {
-//        case missingValue
-//    }
+        var error: Unmanaged<CFError>?
+        guard let cfdata = SecKeyCopyExternalRepresentation(HyphenCryptography.getPubKey(), &error) else {
+            return nil
+        }
+
+        guard error == nil else {
+            return nil
+        }
+
+        let data: Data = cfdata as Data
+        let encodedPublicKey = data.hexEncodedString()
+
+        let startIdx = encodedPublicKey.index(encodedPublicKey.startIndex, offsetBy: 2)
+        let publicKey = String(encodedPublicKey[startIdx...])
+
+        let userKey = await HyphenUserKey(
+            type: .device,
+            device: HyphenDevice(
+                publicKey: publicKey,
+                pushToken: fcmToken,
+                name: UIDevice.current.name,
+                osName: .iOS,
+                osVersion: HyphenDeviceInformation.osVersion,
+                deviceManufacturer: "Apple",
+                deviceModel: HyphenDeviceInformation.modelName,
+                lang: Locale.preferredLanguages[0],
+                type: .mobile
+            ),
+            publicKey: publicKey,
+            wallet: nil
+        )
+
+        return userKey
+    }
+}
