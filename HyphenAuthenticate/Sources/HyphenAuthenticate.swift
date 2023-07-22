@@ -17,20 +17,19 @@ public final class HyphenAuthenticate: NSObject {
 //    public var authorizationCallback: (ASAuthorization) -> Void = { _ in }
 
     private var _account: HyphenAccount? = nil
-    public var account: HyphenAccount? {
-        _account
-    }
 
-    override private init() {
-        super.init()
-
-        Task {
-            do {
-                self._account = try await HyphenNetworking.shared.getMyAccount()
-            } catch {
-                print(error)
-            }
+    override private init() {}
+    
+    public func getAccount() async throws -> HyphenAccount {
+        if let account = self._account {
+            return account
         }
+        
+        let accountResult = try await HyphenNetworking.shared.getMyAccount()
+        
+        self._account = accountResult
+        
+        return accountResult
     }
 
     public func authenticate(provider method: HyphenAuthenticateMethod) async throws {
@@ -85,24 +84,44 @@ public final class HyphenAuthenticate: NSObject {
 
                             _account = result.account
                             
+                            Hyphen.shared.saveCredential(result.credentials)
+                            
                             print(result)
                         }
                     }
                 }
             } else {
-                HyphenLogger.shared.logger.info("Request Hyphen 2FA authenticate...")
+                HyphenLogger.shared.logger.info("Request authenticate challenge...")
 
                 guard let hyphenUserKey = try await getHyphenUserKey() else {
                     HyphenLogger.shared.logger.critical("Hyphen SDK error occured. unexpected error. getHyphenUserKey() == nil")
                     throw HyphenSdkError.internalSdkError
                 }
-
-                _ = try await HyphenNetworking.shared.signIn2FA(
-                    payload: HyphenRequestSignIn2FA(
-                        request: HyphenRequestSignIn2FA.Request(method: "firebase", token: idToken, chainName: "flow-testnet"),
-                        userKey: hyphenUserKey
+                
+                let challengeRequest = try await HyphenNetworking.shared.signInChallenge(
+                    payload: HyphenRequestSignInChallenge(
+                        challengeType: "deviceKey",
+                        request: HyphenRequestSignInChallenge.Request(method: "firebase", token: idToken, chainName: "flow-testnet"),
+                        publicKey: hyphenUserKey.publicKey
                     )
                 )
+                
+                let challengeData = challengeRequest.challengeData
+                guard let challengeDataSignature = HyphenCryptography.signData(challengeData.data(using: .utf8)!)?.hexEncodedString() else {
+                    HyphenLogger.shared.logger.error("Signing challenge data failed. Maybe user denied biometric authenticate permission deny or mismatch password (biometric method).")
+                    return
+                }
+                
+                let challengeRespondRequest = try await HyphenNetworking.shared.signInChallengeRespond(
+                    payload: HyphenRequestSignInChallengeRespond(
+                        challengeType: "deviceKey",
+                        challengeData: challengeData,
+                        deviceKey: HyphenRequestSignInChallengeRespond.DeviceKey(signature: challengeDataSignature)
+                    )
+                )
+                
+                _account = challengeRespondRequest.account
+                Hyphen.shared.saveCredential(challengeRespondRequest.credentials)
             }
 
             // process hyphen authenticate process
