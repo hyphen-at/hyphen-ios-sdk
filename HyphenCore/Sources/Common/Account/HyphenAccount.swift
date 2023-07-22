@@ -1,6 +1,6 @@
 import Foundation
 
-public struct HyphenAccount: Codable, Equatable, Sendable {
+public struct HyphenAccount: Codable, Equatable, Sendable, Hashable {
     public let id: String
     public let addresses: [HyphenAccountAddress]
     public let parent: [HyphenAccountAddress]

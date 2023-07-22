@@ -1,6 +1,6 @@
 import Foundation
 
-public struct HyphenAccountAddress: Codable, Equatable, Sendable {
+public struct HyphenAccountAddress: Codable, Equatable, Sendable, Hashable {
     public let chainName: String
     public let chainId: Int?
     public let chainType: HyphenChainType
