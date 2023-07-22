@@ -34,6 +34,21 @@ public class HyphenCryptography: NSObject {
         ],
     ]
 
+    public class func isDeviceKeyExist() -> Bool {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassKey,
+            kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
+            kSecAttrApplicationTag as String: privTag,
+            kSecAttrKeyClass as String: kSecAttrKeyClassPrivate,
+            kSecReturnRef as String: true,
+        ]
+
+        var result: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+
+        return status == errSecSuccess
+    }
+
     public class func getPubKey() -> SecKey {
         let query: [String: Any] = [
             kSecClass as String: kSecClassKey,
