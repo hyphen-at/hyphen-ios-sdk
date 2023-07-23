@@ -2,6 +2,7 @@ import Foundation
 import UIKit
 import UserNotifications
 @_spi(HyphenInternal) import HyphenCore
+import HyphenFlow
 import HyphenNetwork
 import RealEventsBus
 
@@ -68,6 +69,7 @@ public extension Hyphen {
 
                 Bus<HyphenEventBusType>.post(.twoFactorAuthDenied)
             case .approved:
+                try await HyphenFlow.shared.waitTransactionSealed(txId: twoFactorRequest.twoFactorAuth.result!.txId)
                 Bus<HyphenEventBusType>.post(.twoFactorAuthApproved(requestId: twoFactorRequest.twoFactorAuth.request.id))
             default:
                 break
