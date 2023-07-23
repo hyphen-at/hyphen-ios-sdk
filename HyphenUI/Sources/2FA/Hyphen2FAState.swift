@@ -1,4 +1,5 @@
 @_spi(HyphenInternal) import HyphenCore
+import HyphenFlow
 import HyphenNetwork
 import SwiftUI
 
@@ -35,7 +36,35 @@ class Hyphen2FAState: ObservableObject {
         }
     }
 
-    func approve2FA() {}
+    func approve2FA() {
+        isProcessing = true
+
+        Task {
+            HyphenLogger.shared.logger.info("Generate and signing 'source device add public key' transaction...")
+
+            let tx = try await HyphenFlow.shared.makeSignedTransactionPayloadWithoutArguments(
+                hyphenFlowCadence: HyphenFlowCadence(cadence: """
+                transaction {
+                   prepare(acct: AuthAccount) {}
+                   execute {
+                     log("Hello world")
+                  }
+                }
+                """)
+            )
+            let txId = try await HyphenFlow.shared.sendSignedTransaction(tx)
+            HyphenLogger.shared.logger.info("Transaction hash -> \(txId)")
+
+            try await HyphenNetworking.shared.approve2FA(
+                id: twoFactorAuth!.id,
+                payload: HyphenRequest2FAApprove(txId: txId)
+            )
+
+            HyphenLogger.shared.logger.info("Approve 2FA done!")
+
+            await UIApplication.shared.hyphensdk_currentKeyWindowPresentedController?.dismiss(animated: true)
+        }
+    }
 
     private func startCountdownTimer() {
         Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in

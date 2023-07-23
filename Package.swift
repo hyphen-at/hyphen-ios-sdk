@@ -81,6 +81,7 @@ let package = Package(
             dependencies: [
                 .target(name: "HyphenCore"),
                 .target(name: "HyphenNetwork"),
+                .target(name: "HyphenFlow"),
                 .product(name: "RealEventsBus", package: "RealEventsBus"),
             ],
             path: "HyphenUI/Sources"

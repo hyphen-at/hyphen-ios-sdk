@@ -32,4 +32,10 @@ public extension HyphenNetworking {
 
         return response
     }
+
+    func twoFactorFinish(payload: HyphenRequest2FAFinish) async throws -> HyphenResponseSignIn {
+        let response: HyphenResponseSignIn = try await authProvider.async.request(.twoFactorFinish(payload: payload))
+
+        return response
+    }
 }

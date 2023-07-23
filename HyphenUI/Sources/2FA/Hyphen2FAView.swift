@@ -249,8 +249,9 @@ struct Hyphen2FAView: View {
                         message: "deadbeefdeadbeefdeadbeef"
                     ),
                     status: .pending,
-                    expiresAt: "2021-01-01T00:00:00Z", result: Hyphen2FAStatus.Result(
-                        signature: "string"
+                    expiresAt: "2021-01-01T00:00:00Z",
+                    result: Hyphen2FAStatus.Result(
+                        txId: "0x00000000"
                     )
                 ), state: state
             )

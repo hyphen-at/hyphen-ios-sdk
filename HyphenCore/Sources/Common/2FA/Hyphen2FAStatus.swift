@@ -34,14 +34,14 @@ public struct Hyphen2FAStatus: Codable, Equatable, Sendable {
     }
 
     public struct Result: Codable, Equatable, Sendable {
-        public let signature: String
+        public let txId: String
 
         enum CodingKeys: String, CodingKey {
-            case signature
+            case txId
         }
 
-        public init(signature: String) {
-            self.signature = signature
+        public init(txId: String) {
+            self.txId = txId
         }
     }
 }

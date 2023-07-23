@@ -7,4 +7,6 @@ public enum AuthAPI {
     case signInChallengeRespond(payload: HyphenRequestSignInChallengeRespond)
 
     case signUp(payload: HyphenRequestSignUp)
+
+    case twoFactorFinish(payload: HyphenRequest2FAFinish)
 }

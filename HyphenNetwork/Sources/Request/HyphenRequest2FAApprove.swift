@@ -1,13 +1,13 @@
 import Foundation
 
 public struct HyphenRequest2FAApprove: Codable {
-    public let signature: String
+    public let txId: String
 
-    public init(signature: String) {
-        self.signature = signature
+    public init(txId: String) {
+        self.txId = txId
     }
 
     enum CodingKeys: String, CodingKey {
-        case signature
+        case txId
     }
 }

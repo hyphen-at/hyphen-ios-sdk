@@ -21,6 +21,8 @@ extension AuthAPI: TargetType {
             return "/auth/v1/signin/challenge/respond"
         case .signUp(payload: _):
             return "/auth/v1/signup"
+        case .twoFactorFinish(payload: _):
+            return "/auth/v1/signin/2fa/finish"
         }
     }
 
@@ -44,6 +46,9 @@ extension AuthAPI: TargetType {
             let json = try! JSONEncoder().encode(payload)
             return .requestData(json)
         case let .signUp(payload: payload):
+            let json = try! JSONEncoder().encode(payload)
+            return .requestData(json)
+        case let .twoFactorFinish(payload: payload):
             let json = try! JSONEncoder().encode(payload)
             return .requestData(json)
         }
