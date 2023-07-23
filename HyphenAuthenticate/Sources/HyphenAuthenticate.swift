@@ -185,6 +185,17 @@ public final class HyphenAuthenticate: NSObject {
             HyphenLogger.shared.logger.info("Request Hyphen 2FA authenticate successfully. Please check your another device.")
 
             Bus<HyphenEventBusType>.post(.show2FAWaitingProgressModal(isShow: true))
+
+            let _: Bool = try await withUnsafeThrowingContinuation { continuation in
+                Bus<HyphenEventBusType>.register(HyphenAuthenticate.self) { event in
+                    switch event {
+                    case .twoFactorAuthDenied:
+                        continuation.resume(throwing: HyphenSdkError.twoFactorDenied)
+                    default:
+                        break
+                    }
+                }
+            }
         } catch {
             if let convertedMoyaError = error as? MoyaError,
                let response = convertedMoyaError.response

@@ -6,5 +6,7 @@ public enum HyphenSdkError: Error {
 
     case unauthorized
 
+    case twoFactorDenied
+
     case internalSdkError
 }

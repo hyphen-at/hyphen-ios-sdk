@@ -178,7 +178,7 @@ struct Hyphen2FAView: View {
                         if #available(iOS 15.0, *) {
                             ProgressView()
                                 .progressViewStyle(.circular)
-                                .controlSize(.regular)
+                                .controlSize(.large)
                                 .tint(.gray)
                         } else {
                             ProgressView()
@@ -186,8 +186,9 @@ struct Hyphen2FAView: View {
                         }
                         Spacer()
                     }
+                    Spacer()
                 }
-                .background(Color.white.opacity(0.3))
+                .background(Color.white.opacity(0.4))
                 .allowsHitTesting(true)
                 .animation(.easeInOut, value: state.isProcessing)
             }

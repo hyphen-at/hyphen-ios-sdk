@@ -6,6 +6,10 @@ import HyphenNetwork
 import RealEventsBus
 
 public extension Hyphen {
+    func application(_: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any]) async {
+        await handleNotification(userInfo: userInfo)
+    }
+
     func userNotificationCenter(_: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
         let userInfo = response.notification.request.content.userInfo
 
@@ -39,6 +43,29 @@ public extension Hyphen {
                 vc.modalPresentationStyle = .fullScreen
             }
             await UIApplication.shared.hyphensdk_currentKeyWindow?.rootViewController?.present(vc, animated: true)
+        } else if hyphenNotificationType == "2fa-status-change" {
+            guard let twoFactorRequest = try? JSONDecoder().decode(HyphenResponseSignIn2FA.self, from: hyphenData.data(using: .utf8)!) else {
+                HyphenLogger.shared.logger.critical("HyphenUI SDK internal error. Push notification payload type is 2fa-request, but payload decode failed.")
+                return
+            }
+
+            if twoFactorRequest.twoFactorAuth.status == .denied {
+                Bus<HyphenEventBusType>.post(.show2FAWaitingProgressModal(isShow: false))
+                let alertController = await UIAlertController(title: "Login Failed", message: "2FA Request denied from your another device.", preferredStyle: .alert)
+
+                let OKAction = await UIAlertAction(title: "OK", style: .default) { (_: UIAlertAction!) in
+                    Task {
+                        await MainActor.run {
+                            alertController.dismiss(animated: false)
+                        }
+                    }
+                }
+
+                await alertController.addAction(OKAction)
+                await UIApplication.shared.hyphensdk_currentKeyWindow?.rootViewController?.present(alertController, animated: true)
+
+                Bus<HyphenEventBusType>.post(.twoFactorAuthDenied)
+            }
         }
     }
 }
@@ -61,6 +88,8 @@ public final class HyphenUI: NSObject {
                     loadingIndicator?.removeFromSuperview()
                     loadingIndicator = nil
                 }
+            default:
+                break
             }
         }
     }

@@ -54,7 +54,7 @@ class HyphenTopLoadingIndicator: UIVisualEffectView {
             layer.cornerRadius = 8.0
             layer.masksToBounds = true
             label.text = text
-            label.textAlignment = NSTextAlignment.center
+            label.textAlignment = NSTextAlignment.left
             label.frame = CGRect(x: activityIndicatorSize + 5,
                                  y: 0,
                                  width: width - activityIndicatorSize - 15,
