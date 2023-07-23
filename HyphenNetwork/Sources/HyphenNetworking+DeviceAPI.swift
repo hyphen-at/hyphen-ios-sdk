@@ -6,7 +6,6 @@ import Moya
 // MARK: - Hyphen Device API
 
 public extension HyphenNetworking {
-    
     @discardableResult
     func editDevice(publicKey: String, payload: HyphenRequestEditDevice) async throws -> HyphenResponseEmpty {
         return try await deviceProvider.async.request(.editDevice(publicKey: publicKey, payload: payload))

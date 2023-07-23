@@ -7,6 +7,7 @@ import Foundation
 @_spi(HyphenInternal) import HyphenCore
 import HyphenNetwork
 import Moya
+import RealEventsBus
 
 typealias Task = _Concurrency.Task
 
@@ -182,6 +183,8 @@ public final class HyphenAuthenticate: NSObject {
                 )
             )
             HyphenLogger.shared.logger.info("Request Hyphen 2FA authenticate successfully. Please check your another device.")
+
+            Bus<HyphenEventBusType>.post(.show2FAWaitingProgressModal(isShow: true))
         } catch {
             if let convertedMoyaError = error as? MoyaError,
                let response = convertedMoyaError.response

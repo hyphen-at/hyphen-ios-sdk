@@ -1,5 +1,5 @@
 import Foundation
-import HyphenCore
+@_spi(HyphenInternalOnlyNetworking) import HyphenCore
 import Moya
 
 // MARK: - Hyphen Auth API
@@ -7,6 +7,8 @@ import Moya
 public extension HyphenNetworking {
     func signIn2FA(payload: HyphenRequestSignIn2FA) async throws -> HyphenResponseSignIn2FA {
         let response: HyphenResponseSignIn2FA = try await authProvider.async.request(.signIn2FA(payload: payload))
+
+        Hyphen.shared.saveEphemeralAccessToken(response.ephemeralAccessToken)
 
         return response
     }

@@ -3,6 +3,7 @@ import UIKit
 import UserNotifications
 @_spi(HyphenInternal) import HyphenCore
 import HyphenNetwork
+import RealEventsBus
 
 public extension Hyphen {
     func userNotificationCenter(_: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
@@ -40,4 +41,33 @@ public extension Hyphen {
             await UIApplication.shared.hyphensdk_currentKeyWindow?.rootViewController?.present(vc, animated: true)
         }
     }
+}
+
+public final class HyphenUI: NSObject {
+    public static let shared: HyphenUI = .init()
+
+    override private init() {
+        super.init()
+
+        var loadingIndicator: HyphenTopLoadingIndicator? = nil
+
+        Bus<HyphenEventBusType>.register(self) { event in
+            switch event {
+            case let .show2FAWaitingProgressModal(isShow: isShow):
+                if isShow {
+                    loadingIndicator = HyphenTopLoadingIndicator(text: "Waiting for 2FA Request acceptance from another device...")
+                    UIApplication.shared.hyphensdk_currentKeyWindowPresentedController?.view.addSubview(loadingIndicator!)
+                } else {
+                    loadingIndicator?.removeFromSuperview()
+                    loadingIndicator = nil
+                }
+            }
+        }
+    }
+
+    deinit {
+        Bus<HyphenEventBusType>.unregister(self)
+    }
+
+    public func application(_: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]? = nil) {}
 }

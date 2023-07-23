@@ -132,7 +132,9 @@ struct Hyphen2FAView: View {
                 .padding(.horizontal, 16)
 
                 HStack(spacing: 8) {
-                    Button(action: {}) {
+                    Button(action: {
+                        state.reject2FA()
+                    }) {
                         HStack(alignment: .bottom, spacing: 8) {
                             Spacer()
                             Text("Refuse")
@@ -167,7 +169,7 @@ struct Hyphen2FAView: View {
             .onAppear {
                 self.state.twoFactorAuth = twoFactorAuth
             }
-            
+
             if state.isProcessing {
                 VStack {
                     Spacer()
@@ -177,6 +179,7 @@ struct Hyphen2FAView: View {
                             ProgressView()
                                 .progressViewStyle(.circular)
                                 .controlSize(.regular)
+                                .tint(.gray)
                         } else {
                             ProgressView()
                                 .progressViewStyle(.circular)

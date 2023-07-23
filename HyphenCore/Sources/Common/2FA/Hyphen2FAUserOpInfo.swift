@@ -18,17 +18,20 @@ public struct Hyphen2FAUserOpInfo: Codable, Equatable, Sendable, Hashable {
         public let location: String
         public let ip: String
         public let email: String
+        public let message: String
 
         enum CodingKeys: String, CodingKey {
             case location
             case ip
             case email
+            case message
         }
 
-        public init(location: String, ip: String, email: String) {
+        public init(location: String, ip: String, email: String, message: String) {
             self.location = location
             self.ip = ip
             self.email = email
+            self.message = message
         }
     }
 }
