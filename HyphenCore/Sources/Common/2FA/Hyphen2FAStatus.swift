@@ -6,7 +6,7 @@ public struct Hyphen2FAStatus: Codable, Equatable, Sendable {
     public let request: Hyphen2FARequest
     public let status: Hyphen2FAStatusType
     public let expiresAt: String
-    public let result: Hyphen2FAStatus.Result
+    public let result: Hyphen2FAStatus.Result?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -23,7 +23,7 @@ public struct Hyphen2FAStatus: Codable, Equatable, Sendable {
         request: Hyphen2FARequest,
         status: Hyphen2FAStatusType,
         expiresAt: String,
-        result: Hyphen2FAStatus.Result
+        result: Hyphen2FAStatus.Result? = nil
     ) {
         self.id = id
         self.accountId = accountId
