@@ -1,7 +1,20 @@
+import HyphenCore
 import SwiftUI
 import UIKit
 
 public class Hyphen2FAViewController: UIViewController {
+    private var twoFactorRequest: Hyphen2FARequest
+
+    init(twoFactorRequest: Hyphen2FARequest) {
+        self.twoFactorRequest = twoFactorRequest
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
     override public func viewDidLoad() {
         super.viewDidLoad()
 
