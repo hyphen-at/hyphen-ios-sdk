@@ -31,6 +31,7 @@ let package = Package(
         .package(url: "https://github.com/google/GoogleSignIn-iOS", .upToNextMajor(from: "7.0.0")),
         .package(url: "https://github.com/Moya/Moya.git", .upToNextMajor(from: "15.0.0")),
         .package(url: "https://github.com/vpeschenkov/SecureDefaults", .upToNextMajor(from: "1.0.0")),
+        .package(url: "https://github.com/malcommac/RealEventsBus.git", branch: "main"),
         // .package(url: "https://github.com/SomeRandomiOSDev/CBORCoding.git", from: "1.0.0"),
         // .package(url: "https://github.com/Kitura/BlueECC", branch: "master"),
         // .package(url: "https://github.com/gematik/ASN1Kit", branch: "main"),
@@ -42,6 +43,7 @@ let package = Package(
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "FirebaseMessaging", package: "firebase-ios-sdk"),
                 .product(name: "SecureDefaults", package: "SecureDefaults"),
+                .product(name: "RealEventsBus", package: "RealEventsBus"),
             ],
             path: "HyphenCore/Sources"
         ),
@@ -54,6 +56,7 @@ let package = Package(
                 .product(name: "FirebaseMessaging", package: "firebase-ios-sdk"),
                 .product(name: "GoogleSignIn", package: "GoogleSignIn-iOS"),
                 .product(name: "Moya", package: "Moya"),
+                .product(name: "RealEventsBus", package: "RealEventsBus"),
                 // .product(name: "CBORCoding", package: "CBORCoding"),
                 // .product(name: "CryptorECC", package: "BlueECC"),
                 // .product(name: "ASN1Kit", package: "ASN1Kit"),
@@ -73,6 +76,7 @@ let package = Package(
             dependencies: [
                 .target(name: "HyphenCore"),
                 .target(name: "HyphenNetwork"),
+                .product(name: "RealEventsBus", package: "RealEventsBus"),
             ],
             path: "HyphenUI/Sources"
         ),
