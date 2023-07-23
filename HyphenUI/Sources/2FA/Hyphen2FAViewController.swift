@@ -3,10 +3,10 @@ import SwiftUI
 import UIKit
 
 public class Hyphen2FAViewController: UIViewController {
-    private var twoFactorRequest: Hyphen2FARequest
+    private var twoFactorAuth: Hyphen2FAStatus
 
-    init(twoFactorRequest: Hyphen2FARequest) {
-        self.twoFactorRequest = twoFactorRequest
+    init(twoFactorAuth: Hyphen2FAStatus) {
+        self.twoFactorAuth = twoFactorAuth
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -18,7 +18,7 @@ public class Hyphen2FAViewController: UIViewController {
     override public func viewDidLoad() {
         super.viewDidLoad()
 
-        let hostingController = UIHostingController(rootView: Hyphen2FAView())
+        let hostingController = UIHostingController(rootView: Hyphen2FAView(twoFactorAuth: twoFactorAuth))
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         addChild(hostingController)
         view.addSubview(hostingController.view)

@@ -6,6 +6,7 @@ public struct Hyphen2FAStatus: Codable, Equatable, Sendable {
     public let request: Hyphen2FARequest
     public let status: Hyphen2FAStatusType
     public let expiresAt: String
+    public let result: Hyphen2FAStatus.Result
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -13,6 +14,7 @@ public struct Hyphen2FAStatus: Codable, Equatable, Sendable {
         case request
         case status
         case expiresAt
+        case result
     }
 
     public init(
@@ -20,12 +22,26 @@ public struct Hyphen2FAStatus: Codable, Equatable, Sendable {
         accountId: String,
         request: Hyphen2FARequest,
         status: Hyphen2FAStatusType,
-        expiresAt: String
+        expiresAt: String,
+        result: Hyphen2FAStatus.Result
     ) {
         self.id = id
         self.accountId = accountId
         self.request = request
         self.status = status
         self.expiresAt = expiresAt
+        self.result = result
+    }
+
+    public struct Result: Codable, Equatable, Sendable {
+        public let signature: String
+
+        enum CodingKeys: String, CodingKey {
+            case signature
+        }
+
+        public init(signature: String) {
+            self.signature = signature
+        }
     }
 }

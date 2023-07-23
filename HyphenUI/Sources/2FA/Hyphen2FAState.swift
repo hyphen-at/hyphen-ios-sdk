@@ -1,10 +1,8 @@
+import HyphenCore
 import SwiftUI
 
 class Hyphen2FAState: ObservableObject {
-    @Published var appName: String = ""
-    @Published var requestDeviceName: String = ""
-    @Published var requestEmail: String = ""
-    @Published var near: String = ""
+    @Published var twoFactorAuth: Hyphen2FAStatus? = nil
 
     @Published private var remainingTimeSeconds = 3 * 60
 
@@ -20,6 +18,7 @@ class Hyphen2FAState: ObservableObject {
         Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
             if self.remainingTimeSeconds == 0 {
                 timer.invalidate()
+                return
             }
 
             self.remainingTimeSeconds -= 1

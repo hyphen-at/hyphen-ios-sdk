@@ -72,6 +72,7 @@ let package = Package(
             name: "HyphenUI",
             dependencies: [
                 .target(name: "HyphenCore"),
+                .target(name: "HyphenNetwork"),
             ],
             path: "HyphenUI/Sources"
         ),

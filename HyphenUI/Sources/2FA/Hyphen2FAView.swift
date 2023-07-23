@@ -1,6 +1,9 @@
+import HyphenCore
 import SwiftUI
 
 struct Hyphen2FAView: View {
+    let twoFactorAuth: Hyphen2FAStatus
+
     @StateObject var state: Hyphen2FAState = .init()
 
     var body: some View {
@@ -39,7 +42,7 @@ struct Hyphen2FAView: View {
             .padding(.top, 26)
 
             HStack {
-                Text("\(state.appName) requires to\nSign-In")
+                Text("\(state.twoFactorAuth?.request.app.appName ?? "") requires to\nSign-In")
                     .font(.system(size: 24, weight: .medium))
                     .foregroundColor(Color(red: 0.06, green: 0.06, blue: 0.06))
                 Spacer()
@@ -47,7 +50,7 @@ struct Hyphen2FAView: View {
             .padding(.top, 16)
             .padding(.horizontal, 20)
             HStack {
-                Text("\(state.requestDeviceName) is trying to sign-in into \(state.appName) in the \(state.requestEmail) account.")
+                Text("\(state.twoFactorAuth?.request.srcDevice.name ?? "") is trying to sign-in into \(state.twoFactorAuth?.request.app.appName ?? "") in the \(state.twoFactorAuth?.request.userOpInfo.signIn.email ?? "") account.")
                     .font(.system(size: 16))
                     .foregroundColor(Color(red: 0.12, green: 0.14, blue: 0.16))
                 Spacer()
@@ -65,7 +68,7 @@ struct Hyphen2FAView: View {
                     Spacer()
                 }
                 HStack {
-                    Text(state.requestDeviceName)
+                    Text(state.twoFactorAuth?.request.srcDevice.name ?? "")
                         .font(.system(size: 16))
                         .foregroundColor(Color(red: 0.4, green: 0.4, blue: 0.4))
                     Spacer()
@@ -80,7 +83,7 @@ struct Hyphen2FAView: View {
                     Spacer()
                 }
                 HStack {
-                    Text(state.appName)
+                    Text(state.twoFactorAuth?.request.app.appName ?? "")
                         .font(.system(size: 16))
                         .foregroundColor(Color(red: 0.4, green: 0.4, blue: 0.4))
                     Spacer()
@@ -95,7 +98,7 @@ struct Hyphen2FAView: View {
                     Spacer()
                 }
                 HStack {
-                    Text(state.near)
+                    Text(state.twoFactorAuth?.request.userOpInfo.signIn.location ?? "")
                         .font(.system(size: 16))
                         .foregroundColor(Color(red: 0.4, green: 0.4, blue: 0.4))
                     Spacer()
@@ -159,6 +162,9 @@ struct Hyphen2FAView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 18)
         }
+        .onAppear {
+            self.state.twoFactorAuth = twoFactorAuth
+        }
     }
 }
 
@@ -168,14 +174,56 @@ struct Hyphen2FAView: View {
             let state = Hyphen2FAState()
 
             Hyphen2FAView(
-                state: state
+                twoFactorAuth: Hyphen2FAStatus(
+                    id: "1",
+                    accountId: "1",
+                    request: Hyphen2FARequest(
+                        id: "faceb00c-cafe-babe-badd-deadbeef1234",
+                        app: HyphenAppInformation(
+                            appId: "swirl-dev",
+                            appName: "Swirl"
+                        ),
+                        userOpInfo: Hyphen2FAUserOpInfo(
+                            type: "sign-in",
+                            signIn: Hyphen2FAUserOpInfo.SignIn(
+                                location: "Seoul, KR",
+                                ip: "127.0.0.1",
+                                email: "john@acme.com"
+                            )
+                        ),
+                        srcDevice: HyphenDevice(
+                            id: "deadbeef-dead-beef-cafe-deadbeefcafe",
+                            publicKey: "faceb00ccafebabedeadbeefbadf00defaceb00ccafebabedeadbeefbadf00de",
+                            pushToken: "bk3RNwTe3H0:CI2k_HHwgIpoDKCIZvvDMExUdFQ3P1...",
+                            name: "iPhone 14",
+                            osName: .iOS,
+                            osVersion: "16.2",
+                            deviceManufacturer: "Apple",
+                            deviceModel: "SM-265N",
+                            lang: "en",
+                            type: .mobile
+                        ),
+                        destDevice: HyphenDevice(
+                            id: "deadbeef-dead-beef-cafe-deadbeefcafe",
+                            publicKey: "faceb00ccafebabedeadbeefbadf00defaceb00ccafebabedeadbeefbadf00de",
+                            pushToken: "bk3RNwTe3H0:CI2k_HHwgIpoDKCIZvvDMExUdFQ3P1...",
+                            name: "iPhone 14",
+                            osName: .iOS,
+                            osVersion: "16.2",
+                            deviceManufacturer: "Apple",
+                            deviceModel: "SM-265N",
+                            lang: "en",
+                            type: .mobile
+                        ),
+                        requestedAt: "2021-01-01T00:00:00Z",
+                        message: "deadbeefdeadbeefdeadbeef"
+                    ),
+                    status: .pending,
+                    expiresAt: "2021-01-01T00:00:00Z", result: Hyphen2FAStatus.Result(
+                        signature: "string"
+                    )
+                ), state: state
             )
-            .onAppear {
-                state.appName = "SWIRL"
-                state.requestDeviceName = "iPhone 14 Pro"
-                state.requestEmail = "dora@meowauth.xyz"
-                state.near = "Seoul, Rep.Korea"
-            }
         }
     }
 #endif

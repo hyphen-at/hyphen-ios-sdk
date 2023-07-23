@@ -231,6 +231,7 @@ public final class HyphenAuthenticate: NSObject {
         let userKey = await HyphenUserKey(
             type: .device,
             device: HyphenDevice(
+                id: nil,
                 publicKey: publicKey,
                 pushToken: fcmToken,
                 name: UIDevice.current.name,

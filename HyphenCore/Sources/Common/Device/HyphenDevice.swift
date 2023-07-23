@@ -1,6 +1,7 @@
 import Foundation
 
 public struct HyphenDevice: Codable, Equatable, Sendable, Hashable {
+    public let id: String?
     public let publicKey: String
     public let pushToken: String
     public let name: String
@@ -12,6 +13,7 @@ public struct HyphenDevice: Codable, Equatable, Sendable, Hashable {
     public let type: HyphenDeviceType
 
     enum CodingKeys: String, CodingKey {
+        case id
         case publicKey
         case pushToken
         case name
@@ -24,6 +26,7 @@ public struct HyphenDevice: Codable, Equatable, Sendable, Hashable {
     }
 
     public init(
+        id: String?,
         publicKey: String,
         pushToken: String,
         name: String,
@@ -34,6 +37,7 @@ public struct HyphenDevice: Codable, Equatable, Sendable, Hashable {
         lang: String,
         type: HyphenDeviceType
     ) {
+        self.id = id
         self.publicKey = publicKey
         self.pushToken = pushToken
         self.name = name
