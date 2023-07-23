@@ -55,7 +55,7 @@ public final class HyphenUI: NSObject {
             switch event {
             case let .show2FAWaitingProgressModal(isShow: isShow):
                 if isShow {
-                    loadingIndicator = HyphenTopLoadingIndicator(text: "Waiting for 2FA Request approval...")
+                    loadingIndicator = HyphenTopLoadingIndicator(text: "Waiting 2FA approval...")
                     UIApplication.shared.hyphensdk_currentKeyWindowPresentedController?.view.addSubview(loadingIndicator!)
                 } else {
                     loadingIndicator?.removeFromSuperview()
