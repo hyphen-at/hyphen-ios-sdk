@@ -37,7 +37,7 @@ class HyphenTopLoadingIndicator: UIVisualEffectView {
         super.didMoveToSuperview()
 
         if let superview = superview {
-            let width = superview.frame.size.width / 2.3
+            let width = superview.frame.size.width - 100
             let height: CGFloat = 50.0
             frame = CGRect(x: superview.frame.size.width / 2 - width / 2,
                            y: superview.frame.height / 2 - height / 2,
