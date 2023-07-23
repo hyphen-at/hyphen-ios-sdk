@@ -179,4 +179,23 @@ public class HyphenCryptography: NSObject {
         let decResult = String(data: tdata, encoding: .utf8)!
         return decResult
     }
+
+    public class func getPublicKeyHex() -> String {
+        var error: Unmanaged<CFError>?
+        guard let cfdata = SecKeyCopyExternalRepresentation(getPubKey(), &error) else {
+            return ""
+        }
+
+        guard error == nil else {
+            return ""
+        }
+
+        let data: Data = cfdata as Data
+        let encodedPublicKey = data.hexEncodedString()
+
+        let startIdx = encodedPublicKey.index(encodedPublicKey.startIndex, offsetBy: 2)
+        let publicKey = String(encodedPublicKey[startIdx...])
+
+        return publicKey
+    }
 }

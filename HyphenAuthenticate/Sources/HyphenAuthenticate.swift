@@ -188,12 +188,11 @@ public final class HyphenAuthenticate: NSObject {
 
             let _: Bool = try await withUnsafeThrowingContinuation { continuation in
                 Bus<HyphenEventBusType>.register(self) { event in
-                    Bus<HyphenEventBusType>.unregister(self)
-                    
+
                     switch event {
                     case .twoFactorAuthDenied:
                         HyphenLogger.shared.logger.info("2FA denied.")
-                        
+                        Bus<HyphenEventBusType>.unregister(self)
                         continuation.resume(throwing: HyphenSdkError.twoFactorDenied)
                     default:
                         break
@@ -232,22 +231,7 @@ public final class HyphenAuthenticate: NSObject {
 
     private func getHyphenUserKey() async throws -> HyphenUserKey? {
         let fcmToken = try await Messaging.messaging().token()
-
-        var error: Unmanaged<CFError>?
-        guard let cfdata = SecKeyCopyExternalRepresentation(HyphenCryptography.getPubKey(), &error) else {
-            return nil
-        }
-
-        guard error == nil else {
-            return nil
-        }
-
-        let data: Data = cfdata as Data
-        let encodedPublicKey = data.hexEncodedString()
-
-        let startIdx = encodedPublicKey.index(encodedPublicKey.startIndex, offsetBy: 2)
-        let publicKey = String(encodedPublicKey[startIdx...])
-
+        let publicKey = HyphenCryptography.getPublicKeyHex()
         let userKey = await HyphenUserKey(
             type: .device,
             device: HyphenDevice(

@@ -7,7 +7,7 @@ import Moya
 public extension HyphenNetworking {
     func signIn2FA(payload: HyphenRequestSignIn2FA) async throws -> HyphenResponseSignIn2FA {
         let response: HyphenResponseSignIn2FA = try await authProvider.async.request(.signIn2FA(payload: payload))
-        
+
         if let ephemeralAccessToken = response.ephemeralAccessToken {
             Hyphen.shared.saveEphemeralAccessToken(ephemeralAccessToken)
         }

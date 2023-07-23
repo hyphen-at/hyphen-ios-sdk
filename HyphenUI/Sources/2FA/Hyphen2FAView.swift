@@ -137,7 +137,7 @@ struct Hyphen2FAView: View {
                     }) {
                         HStack(alignment: .bottom, spacing: 8) {
                             Spacer()
-                            Text("Refuse")
+                            Text("Deny")
                                 .font(.system(size: 16, weight: .medium))
                                 .foregroundColor(Color(red: 0.12, green: 0.58, blue: 0.94))
                             Spacer()
@@ -147,7 +147,9 @@ struct Hyphen2FAView: View {
                         .background(Color(red: 0.94, green: 0.94, blue: 0.95))
                         .cornerRadius(12)
                     }
-                    Button(action: {}) {
+                    Button(action: {
+                        state.approve2FA()
+                    }) {
                         HStack(alignment: .bottom, spacing: 8) {
                             Spacer()
                             Text("Approve\(state.remainingTimeText)")

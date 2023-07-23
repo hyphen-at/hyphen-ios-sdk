@@ -35,6 +35,8 @@ class Hyphen2FAState: ObservableObject {
         }
     }
 
+    func approve2FA() {}
+
     private func startCountdownTimer() {
         Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
             if self.remainingTimeSeconds == 0 {

@@ -7,33 +7,36 @@ public final class HyphenNetworking: NSObject {
 
     override private init() {}
 
-    @_spi(HyphenInternal)
-    public lazy var authProvider: MoyaProvider<AuthAPI> = {
+    lazy var authProvider: MoyaProvider<AuthAPI> = {
         let provider = MoyaProvider<AuthAPI>(
             session: Session(interceptor: HyphenHeaderInterceptor())
         )
         return provider
     }()
 
-    @_spi(HyphenInternal)
-    public lazy var deviceProvider: MoyaProvider<DeviceAPI> = {
+    lazy var deviceProvider: MoyaProvider<DeviceAPI> = {
         let provider = MoyaProvider<DeviceAPI>(
             session: Session(interceptor: HyphenHeaderInterceptor())
         )
         return provider
     }()
 
-    @_spi(HyphenInternal)
-    public lazy var signProvider: MoyaProvider<SignAPI> = {
+    lazy var signProvider: MoyaProvider<SignAPI> = {
         let provider = MoyaProvider<SignAPI>(
             session: Session(interceptor: HyphenHeaderInterceptor())
         )
         return provider
     }()
 
-    @_spi(HyphenInternal)
-    public lazy var accountProvider: MoyaProvider<AccountAPI> = {
+    lazy var accountProvider: MoyaProvider<AccountAPI> = {
         let provider = MoyaProvider<AccountAPI>(
+            session: Session(interceptor: HyphenHeaderInterceptor())
+        )
+        return provider
+    }()
+
+    lazy var keyProvider: MoyaProvider<KeyAPI> = {
+        let provider = MoyaProvider<KeyAPI>(
             session: Session(interceptor: HyphenHeaderInterceptor())
         )
         return provider

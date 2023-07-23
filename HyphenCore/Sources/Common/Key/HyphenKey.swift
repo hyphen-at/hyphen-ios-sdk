@@ -1,37 +1,37 @@
 import Foundation
 
-public struct HyphenKey: Codable, Equatable, Sendable {
-    public let id: HyphenPublicKey
+public struct HyphenKey: Codable, Hashable, Equatable, Sendable {
+    public let publicKey: HyphenPublicKey
     public let type: HyphenKeyType
     public let name: String
-    public let app: HyphenAppInformation
+    public let keyIndex: Int
     public let userKey: HyphenUserKey?
     public let recoverKey: HyphenRecoverKey?
     public let lastUsedAt: String
 
     private enum CodingKeys: String, CodingKey {
-        case id
+        case publicKey
         case type
         case name
-        case app
+        case keyIndex
         case userKey
         case recoverKey
         case lastUsedAt
     }
 
     public init(
-        id: HyphenPublicKey,
+        publicKey: HyphenPublicKey,
         type: HyphenKeyType,
         name: String,
-        app: HyphenAppInformation,
+        keyIndex: Int,
         userKey: HyphenUserKey?,
         recoverKey: HyphenRecoverKey?,
         lastUsedAt: String
     ) {
-        self.id = id
+        self.publicKey = publicKey
         self.type = type
         self.name = name
-        self.app = app
+        self.keyIndex = keyIndex
         self.userKey = userKey
         self.recoverKey = recoverKey
         self.lastUsedAt = lastUsedAt

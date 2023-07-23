@@ -24,6 +24,10 @@ let package = Package(
             name: "HyphenUI",
             targets: ["HyphenUI"]
         ),
+        .library(
+            name: "HyphenFlow",
+            targets: ["HyphenFlow"]
+        ),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
@@ -32,6 +36,7 @@ let package = Package(
         .package(url: "https://github.com/Moya/Moya.git", .upToNextMajor(from: "15.0.0")),
         .package(url: "https://github.com/vpeschenkov/SecureDefaults", .upToNextMajor(from: "1.0.0")),
         .package(url: "https://github.com/malcommac/RealEventsBus.git", branch: "main"),
+        .package(url: "https://github.com/outblock/flow-swift.git", from: "0.3.3"),
         // .package(url: "https://github.com/SomeRandomiOSDev/CBORCoding.git", from: "1.0.0"),
         // .package(url: "https://github.com/Kitura/BlueECC", branch: "master"),
         // .package(url: "https://github.com/gematik/ASN1Kit", branch: "main"),
@@ -79,6 +84,16 @@ let package = Package(
                 .product(name: "RealEventsBus", package: "RealEventsBus"),
             ],
             path: "HyphenUI/Sources"
+        ),
+        .target(
+            name: "HyphenFlow",
+            dependencies: [
+                .target(name: "HyphenCore"),
+                .target(name: "HyphenNetwork"),
+                .product(name: "RealEventsBus", package: "RealEventsBus"),
+                .product(name: "Flow", package: "flow-swift"),
+            ],
+            path: "HyphenFlow/Sources"
         ),
     ]
 )
