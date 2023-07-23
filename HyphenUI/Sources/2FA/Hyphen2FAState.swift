@@ -43,14 +43,7 @@ class Hyphen2FAState: ObservableObject {
             HyphenLogger.shared.logger.info("Generate and signing 'source device add public key' transaction...")
 
             let tx = try await HyphenFlow.shared.makeSignedTransactionPayloadWithoutArguments(
-                hyphenFlowCadence: HyphenFlowCadence(cadence: """
-                transaction {
-                   prepare(acct: AuthAccount) {}
-                   execute {
-                     log("Hello world")
-                  }
-                }
-                """)
+                hyphenFlowCadence: HyphenFlowCadence(cadence: twoFactorAuth!.request.message)
             )
             let txId = try await HyphenFlow.shared.sendSignedTransaction(tx)
             HyphenLogger.shared.logger.info("Transaction hash -> \(txId)")

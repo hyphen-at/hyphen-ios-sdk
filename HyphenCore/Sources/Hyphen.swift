@@ -51,7 +51,7 @@ public final class Hyphen: NSObject {
     public func saveEphemeralAccessToken(_ ephemeralAccessToken: String) {
         SecureDefaults.standard.set(ephemeralAccessToken, forKey: "at.hyphen.sdk.credential.ephemeralAccessToken")
     }
-    
+
     @_spi(HyphenInternalOnlyNetworking)
     public func getEphemeralAccessToken() -> String {
         SecureDefaults.standard.object(forKey: "at.hyphen.sdk.credential.ephemeralAccessToken") as? String ?? ""

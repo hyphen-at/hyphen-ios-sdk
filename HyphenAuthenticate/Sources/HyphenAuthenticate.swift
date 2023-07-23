@@ -203,9 +203,9 @@ public final class HyphenAuthenticate: NSObject {
                     }
                 }
             }
-            
+
             let result = try await HyphenNetworking.shared.twoFactorFinish(payload: HyphenRequest2FAFinish(twoFactorAuthRequestId: requestId))
-            
+
             _account = result.account
             Hyphen.shared.saveCredential(result.credentials)
         } catch {
