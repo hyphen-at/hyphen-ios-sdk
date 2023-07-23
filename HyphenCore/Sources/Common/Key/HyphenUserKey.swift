@@ -2,7 +2,7 @@ import Foundation
 
 public struct HyphenUserKey: Codable, Equatable, Sendable, Hashable {
     public let type: HyphenUserType
-    public let publicKey: String
+    public let publicKey: String?
     public let device: HyphenDevice?
     public let wallet: HyphenSupportWallet?
 
@@ -16,7 +16,7 @@ public struct HyphenUserKey: Codable, Equatable, Sendable, Hashable {
     public init(
         type: HyphenUserType,
         device: HyphenDevice?,
-        publicKey: String,
+        publicKey: String?,
         wallet: HyphenSupportWallet?
     ) {
         self.type = type

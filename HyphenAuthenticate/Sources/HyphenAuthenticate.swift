@@ -72,7 +72,7 @@ public final class HyphenAuthenticate: NSObject {
                         payload: HyphenRequestSignInChallenge(
                             challengeType: "deviceKey",
                             request: HyphenRequestSignInChallenge.Request(method: "firebase", token: idToken, chainName: "flow-testnet"),
-                            publicKey: hyphenUserKey.publicKey
+                            publicKey: hyphenUserKey.publicKey!
                         )
                     )
 
@@ -164,7 +164,7 @@ public final class HyphenAuthenticate: NSObject {
         }
 
         _ = try await HyphenNetworking.shared.editDevice(
-            publicKey: userKey.publicKey,
+            publicKey: userKey.publicKey!,
             payload: HyphenRequestEditDevice(
                 pushToken: userKey.device?.pushToken ?? ""
             )
@@ -186,7 +186,7 @@ public final class HyphenAuthenticate: NSObject {
 
             Bus<HyphenEventBusType>.post(.show2FAWaitingProgressModal(isShow: true))
 
-            let _: Bool = try await withUnsafeThrowingContinuation { continuation in
+            let requestId: String = try await withUnsafeThrowingContinuation { continuation in
                 Bus<HyphenEventBusType>.register(self) { event in
 
                     switch event {
@@ -194,11 +194,20 @@ public final class HyphenAuthenticate: NSObject {
                         HyphenLogger.shared.logger.info("2FA denied.")
                         Bus<HyphenEventBusType>.unregister(self)
                         continuation.resume(throwing: HyphenSdkError.twoFactorDenied)
+                    case let .twoFactorAuthApproved(requestId: requestId):
+                        HyphenLogger.shared.logger.info("2FA Approved.")
+                        Bus<HyphenEventBusType>.unregister(self)
+                        continuation.resume(returning: requestId)
                     default:
                         break
                     }
                 }
             }
+            
+            let result = try await HyphenNetworking.shared.twoFactorFinish(payload: HyphenRequest2FAFinish(twoFactorAuthRequestId: requestId))
+            
+            _account = result.account
+            Hyphen.shared.saveCredential(result.credentials)
         } catch {
             if let convertedMoyaError = error as? MoyaError,
                let response = convertedMoyaError.response

@@ -48,8 +48,9 @@ public extension Hyphen {
                 HyphenLogger.shared.logger.critical("HyphenUI SDK internal error. Push notification payload type is 2fa-request-change, but payload decode failed.")
                 return
             }
-
-            if twoFactorRequest.twoFactorAuth.status == .denied {
+            
+            switch twoFactorRequest.twoFactorAuth.status {
+            case .denied:
                 Bus<HyphenEventBusType>.post(.show2FAWaitingProgressModal(isShow: false))
                 let alertController = await UIAlertController(title: "Login Failed", message: "2FA Request denied from your another device.", preferredStyle: .alert)
 
@@ -65,6 +66,10 @@ public extension Hyphen {
                 await UIApplication.shared.hyphensdk_currentKeyWindow?.rootViewController?.present(alertController, animated: true)
 
                 Bus<HyphenEventBusType>.post(.twoFactorAuthDenied)
+            case .approved:
+                Bus<HyphenEventBusType>.post(.twoFactorAuthApproved(requestId: twoFactorRequest.twoFactorAuth.request.id))
+            default:
+                break
             }
         }
     }
