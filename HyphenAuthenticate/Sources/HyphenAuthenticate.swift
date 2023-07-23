@@ -187,9 +187,13 @@ public final class HyphenAuthenticate: NSObject {
             Bus<HyphenEventBusType>.post(.show2FAWaitingProgressModal(isShow: true))
 
             let _: Bool = try await withUnsafeThrowingContinuation { continuation in
-                Bus<HyphenEventBusType>.register(HyphenAuthenticate.self) { event in
+                Bus<HyphenEventBusType>.register(self) { event in
+                    Bus<HyphenEventBusType>.unregister(self)
+                    
                     switch event {
                     case .twoFactorAuthDenied:
+                        HyphenLogger.shared.logger.info("2FA denied.")
+                        
                         continuation.resume(throwing: HyphenSdkError.twoFactorDenied)
                     default:
                         break
@@ -220,6 +224,8 @@ public final class HyphenAuthenticate: NSObject {
 
                     print(result)
                 }
+            } else {
+                throw error
             }
         }
     }

@@ -45,7 +45,7 @@ public extension Hyphen {
             await UIApplication.shared.hyphensdk_currentKeyWindow?.rootViewController?.present(vc, animated: true)
         } else if hyphenNotificationType == "2fa-status-change" {
             guard let twoFactorRequest = try? JSONDecoder().decode(HyphenResponseSignIn2FA.self, from: hyphenData.data(using: .utf8)!) else {
-                HyphenLogger.shared.logger.critical("HyphenUI SDK internal error. Push notification payload type is 2fa-request, but payload decode failed.")
+                HyphenLogger.shared.logger.critical("HyphenUI SDK internal error. Push notification payload type is 2fa-request-change, but payload decode failed.")
                 return
             }
 
