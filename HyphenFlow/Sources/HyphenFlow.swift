@@ -48,7 +48,7 @@ public final class HyphenFlow: NSObject {
     }
 
     public func waitTransactionSealed(txId: String) async throws {
-        let tx = Flow.ID(hex: txId)
+        let tx = Flow.ID(hex: "0x\(txId)")
         let transactionResult = try await flow.getTransactionResultById(id: tx)
 
         if transactionResult.status != .sealed {
