@@ -7,22 +7,28 @@ struct HyphenKeyListScreen: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                List {
-                    ForEach(state.keys, id: \.self) { key in
-                        HyphenKeyItem(key: key)
+                if !state.isLoading {
+                    List {
+                        ForEach(state.keys, id: \.self) { key in
+                            HyphenKeyItem(key: key)
+                                .listRowInsets(EdgeInsets())
+                                .listRowSeparator(.hidden)
+                        }
+                        Rectangle()
+                            .foregroundColor(.clear)
+                            .frame(maxWidth: .infinity, minHeight: 1, maxHeight: 1)
+                            .background(Color(red: 0.89, green: 0.89, blue: 0.89))
                             .listRowInsets(EdgeInsets())
                             .listRowSeparator(.hidden)
                     }
-                    Rectangle()
-                        .foregroundColor(.clear)
-                        .frame(maxWidth: .infinity, minHeight: 1, maxHeight: 1)
-                        .background(Color(red: 0.89, green: 0.89, blue: 0.89))
-                        .listRowInsets(EdgeInsets())
-                        .listRowSeparator(.hidden)
+                    .listStyle(.plain)
+                } else {
+                    ProgressView()
+                        .controlSize(.large)
                 }
-                .listStyle(.plain)
             }
             .navigationTitle(Text("Key Manager"))
+            .navigationBarBackButtonHidden(false)
             .navigationBarTitleDisplayMode(.inline)
             .accentColor(.black)
         }
