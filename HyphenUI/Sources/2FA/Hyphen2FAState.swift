@@ -41,7 +41,7 @@ class Hyphen2FAState: ObservableObject {
 
         Task {
             HyphenLogger.shared.logger.info("Generate and signing 'source device add public key' transaction...")
-            
+
             let cadenceScript = try! JSONDecoder().decode(HyphenFlowCadence.self, from: self.twoFactorAuth!.request.message.data(using: .utf8)!)
 
             let tx = try await HyphenFlow.shared.makeSignedTransactionPayloadWithoutArguments(

@@ -69,7 +69,8 @@ public extension Hyphen {
 
                 Bus<HyphenEventBusType>.post(.twoFactorAuthDenied)
             case .approved:
-                try await HyphenFlow.shared.waitTransactionSealed(txId: twoFactorRequest.twoFactorAuth.result!.txId)
+                try! await HyphenFlow.shared.waitTransactionSealed(txId: twoFactorRequest.twoFactorAuth.result!.txId)
+                HyphenLogger.shared.logger.info("2FA request transaction sealed.")
                 Bus<HyphenEventBusType>.post(.twoFactorAuthApproved(requestId: twoFactorRequest.twoFactorAuth.request.id))
             default:
                 break
