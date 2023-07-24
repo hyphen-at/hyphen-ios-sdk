@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "Hyphen",
     platforms: [
-        .iOS(.v14),
+        .iOS(.v15),
     ],
     products: [
         .library(
@@ -84,7 +84,10 @@ let package = Package(
                 .target(name: "HyphenFlow"),
                 .product(name: "RealEventsBus", package: "RealEventsBus"),
             ],
-            path: "HyphenUI/Sources"
+            path: "HyphenUI/Sources",
+            resources: [
+                .process("Resources/HyphenIcons.xcassets"),
+            ]
         ),
         .target(
             name: "HyphenFlow",

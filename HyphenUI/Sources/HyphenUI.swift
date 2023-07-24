@@ -7,6 +7,13 @@ import HyphenNetwork
 import RealEventsBus
 
 public extension Hyphen {
+    func openKeyManager() {
+        let vc = HyphenKeyListViewController()
+        vc.isModalInPresentation = true
+        vc.modalPresentationStyle = .fullScreen
+        UIApplication.shared.hyphensdk_currentKeyWindow?.rootViewController?.navigationController?.pushViewController(vc, animated: true)
+    }
+
     func application(_: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any]) async {
         await handleNotification(userInfo: userInfo)
     }
