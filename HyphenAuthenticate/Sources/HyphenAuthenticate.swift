@@ -21,6 +21,14 @@ public final class HyphenAuthenticate: NSObject {
 
     override private init() {}
 
+    var chainName: String {
+        if Hyphen.shared.network == .testnet {
+            "flow-testnet"
+        } else {
+            "flow-mainnet"
+        }
+    }
+
     public func getAccount() async throws -> HyphenAccount {
         if let account = _account {
             return account
@@ -71,7 +79,7 @@ public final class HyphenAuthenticate: NSObject {
                     let challengeRequest = try await HyphenNetworking.shared.signInChallenge(
                         payload: HyphenRequestSignInChallenge(
                             challengeType: "deviceKey",
-                            request: HyphenRequestSignInChallenge.Request(method: "firebase", token: idToken, chainName: "flow-testnet"),
+                            request: HyphenRequestSignInChallenge.Request(method: "firebase", token: idToken, chainName: chainName),
                             publicKey: hyphenUserKey.publicKey!
                         )
                     )
@@ -178,7 +186,7 @@ public final class HyphenAuthenticate: NSObject {
             HyphenLogger.shared.logger.info("Request Hyphen 2FA authenticate...")
             _ = try await HyphenNetworking.shared.signIn2FA(
                 payload: HyphenRequestSignIn2FA(
-                    request: HyphenRequestSignIn2FA.Request(method: "firebase", token: idToken, chainName: "flow-testnet"),
+                    request: HyphenRequestSignIn2FA.Request(method: "firebase", token: idToken, chainName: chainName),
                     userKey: userKey
                 )
             )
@@ -217,22 +225,27 @@ public final class HyphenAuthenticate: NSObject {
                     HyphenLogger.shared.logger.error("Request Hyphen 2FA authenticate... - Failed -> Sign up needed.")
                     HyphenLogger.shared.logger.info("Request Hyphen Sign up...")
 
-                    let result = try await HyphenNetworking.shared.signUp(
-                        payload: HyphenRequestSignUp(
-                            method: "firebase",
-                            token: idToken,
-                            chainName: "flow-testnet",
-                            userKey: userKey
+                    do {
+                        let result = try await HyphenNetworking.shared.signUp(
+                            payload: HyphenRequestSignUp(
+                                method: "firebase",
+                                token: idToken,
+                                chainName: chainName,
+                                userKey: userKey
+                            )
                         )
-                    )
 
-                    _account = result.account
+                        _account = result.account
 
-                    Hyphen.shared.saveCredential(result.credentials)
+                        Hyphen.shared.saveCredential(result.credentials)
 
-                    print(result)
+                        print(result)
+                    } catch {
+                        print(error)
+                    }
                 }
             } else {
+                print(error)
                 throw error
             }
         }

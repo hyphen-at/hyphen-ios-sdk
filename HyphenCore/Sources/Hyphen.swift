@@ -3,6 +3,11 @@ import Foundation
 import SecureDefaults
 
 public final class Hyphen: NSObject {
+    public enum NetworkType {
+        case testnet
+        case mainnet
+    }
+
     public static let shared: Hyphen = .init()
 
     override private init() {
@@ -28,6 +33,8 @@ public final class Hyphen: NSObject {
             return _appSecret
         }
     }
+
+    public var network: NetworkType = .testnet
 
     private var _apnsToken: Data? = nil
 

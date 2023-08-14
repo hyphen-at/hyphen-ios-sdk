@@ -8,7 +8,7 @@ extension AuthAPI: TargetType {
     }
 
     public var baseURL: URL {
-        return URL(string: "https://api.dev.hyphen.at")!
+        return URL(string: HyphenNetworking.shared.baseUrl)!
     }
 
     public var path: String {
