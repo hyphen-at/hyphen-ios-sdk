@@ -4,17 +4,21 @@ import Foundation
 @_spi(HyphenInternal) import HyphenCore
 import HyphenNetwork
 
-final class HyphenPayMasterKeySigner: FlowSigner {
-    var address: Flow.Address {
-        Flow.Address(hex: "0xe22cea2c515f26e6")
+public final class HyphenPayMasterKeySigner: FlowSigner {
+    public var address: Flow.Address {
+        if Hyphen.shared.network == .testnet {
+            Flow.Address(hex: "0xe22cea2c515f26e6")
+        } else {
+            Flow.Address(hex: "0xd998bea00bb8d39c")
+        }
     }
 
     private var _keyIndex: Int = 0
-    var keyIndex: Int {
+    public var keyIndex: Int {
         _keyIndex
     }
 
-    func sign(transaction _: Flow.Transaction, signableData: Data) async throws -> Data {
+    public func sign(transaction _: Flow.Transaction, signableData: Data) async throws -> Data {
         HyphenLogger.shared.logger.info("HyphenPayMasterKey signing request")
 
         let signResult = try await HyphenNetworking.shared.signTransactionWithPayMasterKey(message: signableData.hexValue)

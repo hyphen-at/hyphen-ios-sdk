@@ -3,7 +3,7 @@ import Foundation
 @_spi(HyphenInternal) import HyphenCore
 import HyphenNetwork
 
-final class HyphenDeviceKeySigner: FlowSigner {
+public final class HyphenDeviceKeySigner: FlowSigner {
     private let _address: Flow.Address
     private let _keyIndex: Int
 
@@ -12,15 +12,15 @@ final class HyphenDeviceKeySigner: FlowSigner {
         _keyIndex = keyIndex
     }
 
-    var address: Flow.Address {
+    public var address: Flow.Address {
         _address
     }
 
-    var keyIndex: Int {
+    public var keyIndex: Int {
         _keyIndex
     }
 
-    func sign(transaction _: Flow.Transaction, signableData: Data) async throws -> Data {
+    public func sign(transaction _: Flow.Transaction, signableData: Data) async throws -> Data {
         HyphenLogger.shared.logger.info("HyphenDeviceKey signing request")
         return HyphenCryptography.signData(signableData)!
     }
