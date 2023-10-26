@@ -9,6 +9,8 @@ public final class HyphenFlow: NSObject {
     override private init() {}
 
     public func makeSignedTransactionPayloadWithoutArguments(hyphenFlowCadence: HyphenFlowCadence) async throws -> Flow.Transaction {
+        configureFlow()
+
         let hyphenAccount = try await HyphenNetworking.shared.getMyAccount()
         let flowAddress = Flow.Address(hex: hyphenAccount.addresses.first!.address)
         let keys = try await HyphenNetworking.shared.getKeys()
@@ -43,6 +45,10 @@ public final class HyphenFlow: NSObject {
     }
 
     public func makeSignedTransactionPayloadWithArguments(hyphenFlowCadence: HyphenFlowCadence, args: [Flow.Cadence.FValue]) async throws -> Flow.Transaction {
+        configureFlow()
+
+        print(URL(string: HyphenNetworking.shared.baseUrl)!)
+
         let hyphenAccount = try await HyphenNetworking.shared.getMyAccount()
         let flowAddress = Flow.Address(hex: hyphenAccount.addresses.first!.address)
         let keys = try await HyphenNetworking.shared.getKeys()
@@ -81,16 +87,28 @@ public final class HyphenFlow: NSObject {
     }
 
     public func sendSignedTransaction(_ transaction: Flow.Transaction) async throws -> String {
+        configureFlow()
+
         let txWait = try await flow.sendTransaction(transaction: transaction)
         return "\(txWait)"
     }
 
     public func waitTransactionSealed(txId: String) async throws {
+        configureFlow()
+
         let tx = Flow.ID(hex: "0x\(txId)")
         let transactionResult = try await flow.getTransactionResultById(id: tx)
 
         if transactionResult.status != .sealed {
             _ = try await tx.onceSealed()
+        }
+    }
+
+    private func configureFlow() {
+        if Hyphen.shared.network == .testnet {
+            flow.configure(chainID: .testnet)
+        } else {
+            flow.configure(chainID: .mainnet)
         }
     }
 }

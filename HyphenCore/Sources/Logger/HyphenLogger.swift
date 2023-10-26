@@ -41,7 +41,7 @@ public struct HyphenFileLogging {
     }
 
     public func handler(label: String) -> HyphenFileLogHandler {
-        return HyphenFileLogHandler(label: label, fileLogger: self)
+        HyphenFileLogHandler(label: label, fileLogger: self)
     }
 
     public static func logger(label: String, localFile url: URL) throws -> Logger {
@@ -66,7 +66,7 @@ public struct HyphenFileLogHandler: LogHandler {
 
     public subscript(metadataKey metadataKey: String) -> Logger.Metadata.Value? {
         get {
-            return metadata[metadataKey]
+            metadata[metadataKey]
         }
         set {
             metadata[metadataKey] = newValue
@@ -93,15 +93,15 @@ public struct HyphenFileLogHandler: LogHandler {
         line _: UInt
     ) {
         let prettyMetadata = metadata?.isEmpty ?? true
-            ? self.prettyMetadata
+            ? prettyMetadata
             : prettify(self.metadata.merging(metadata!, uniquingKeysWith: { _, new in new }))
 
-        var stream = self.stream
+        var stream = stream
         stream.write("\(timestamp()) \(level) \(label) :\(prettyMetadata.map { " \($0)" } ?? "") \(message)\n")
     }
 
     private func prettify(_ metadata: Logger.Metadata) -> String? {
-        return !metadata.isEmpty ? metadata.map { "\($0)=\($1)" }.joined(separator: " ") : nil
+        !metadata.isEmpty ? metadata.map { "\($0)=\($1)" }.joined(separator: " ") : nil
     }
 
     private func timestamp() -> String {

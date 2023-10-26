@@ -7,7 +7,7 @@ public final class HyphenNetworking: NSObject {
 
     override private init() {}
 
-    var baseUrl: String {
+    public var baseUrl: String {
         if Hyphen.shared.network == .testnet {
             "https://api.dev.hyphen.at"
         } else {

@@ -17,7 +17,7 @@ struct HyphenKeyListScreen: View {
                         Rectangle()
                             .foregroundColor(.clear)
                             .frame(maxWidth: .infinity, minHeight: 1, maxHeight: 1)
-                            .background(Color(red: 0.89, green: 0.89, blue: 0.89))
+                            .background(Color(uiColor: .lightGray))
                             .listRowInsets(EdgeInsets())
                             .listRowSeparator(.hidden)
                     }
@@ -43,7 +43,7 @@ struct HyphenKeyItem: View {
             Rectangle()
                 .foregroundColor(.clear)
                 .frame(maxWidth: .infinity, minHeight: 1, maxHeight: 1)
-                .background(Color(red: 0.89, green: 0.89, blue: 0.89))
+                .background(Color(uiColor: .lightGray))
                 .padding(.top, 20)
             HStack(alignment: .top, spacing: 10) {
                 if key.type == .serverKey {
@@ -61,7 +61,7 @@ struct HyphenKeyItem: View {
                     HStack {
                         Text(key.name)
                             .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(Color(red: 0.06, green: 0.06, blue: 0.06))
+                            .foregroundColor(Color(uiColor: .label))
                         Spacer()
                     }
                     HStack {
@@ -89,12 +89,11 @@ struct HyphenKeyItem: View {
         dayFormatter.dateFormat = "dd"
         let day = dayFormatter.string(from: date)
 
-        let suffix: String
-        switch day {
-        case "01", "21", "31": suffix = "st"
-        case "02", "22": suffix = "nd"
-        case "03", "23": suffix = "rd"
-        default: suffix = "th"
+        let suffix = switch day {
+        case "01", "21", "31": "st"
+        case "02", "22": "nd"
+        case "03", "23": "rd"
+        default: "th"
         }
 
         let dateFormatter = DateFormatter()

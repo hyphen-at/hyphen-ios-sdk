@@ -243,6 +243,8 @@ public final class HyphenAuthenticate: NSObject {
                     } catch {
                         print(error)
                     }
+                } else {
+                    print(String(data: response.data, encoding: .utf8))
                 }
             } else {
                 print(error)

@@ -10,7 +10,7 @@ extension MoyaProvider {
         }
 
         func request<T: Decodable>(_ target: Target) async throws -> T {
-            return try await withCheckedThrowingContinuation { continuation in
+            try await withCheckedThrowingContinuation { continuation in
                 provider.request(target) { result in
                     switch result {
                     case let .success(response):

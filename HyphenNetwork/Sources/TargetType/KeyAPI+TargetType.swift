@@ -4,17 +4,17 @@ import Moya
 
 extension KeyAPI: TargetType {
     public var headers: [String: String]? {
-        return ["Content-type": "application/json"]
+        ["Content-type": "application/json"]
     }
 
     public var baseURL: URL {
-        return URL(string: HyphenNetworking.shared.baseUrl)!
+        URL(string: HyphenNetworking.shared.baseUrl)!
     }
 
     public var path: String {
         switch self {
         case .getKeys:
-            return "/key/v1/keys"
+            "/key/v1/keys"
         }
     }
 
@@ -29,7 +29,7 @@ extension KeyAPI: TargetType {
     public var task: Task {
         switch self {
         case .getKeys:
-            return .requestPlain
+            .requestPlain
         }
     }
 }

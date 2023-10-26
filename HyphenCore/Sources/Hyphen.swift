@@ -30,7 +30,7 @@ public final class Hyphen: NSObject {
             }
         }
         get {
-            return _appSecret
+            _appSecret
         }
     }
 

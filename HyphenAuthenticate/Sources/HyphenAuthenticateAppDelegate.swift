@@ -25,6 +25,6 @@ public final class HyphenAuthenticateAppDelegate: NSObject {
         open url: URL,
         options _: [UIApplication.OpenURLOptionsKey: Any] = [:]
     ) -> Bool {
-        return GIDSignIn.sharedInstance.handle(url)
+        GIDSignIn.sharedInstance.handle(url)
     }
 }

@@ -4,23 +4,23 @@ import Moya
 
 extension DeviceAPI: TargetType {
     public var headers: [String: String]? {
-        return ["Content-type": "application/json"]
+        ["Content-type": "application/json"]
     }
 
     public var baseURL: URL {
-        return URL(string: HyphenNetworking.shared.baseUrl)!
+        URL(string: HyphenNetworking.shared.baseUrl)!
     }
 
     public var path: String {
         switch self {
         case let .editDevice(publicKey: publicKey, payload: _):
-            return "/device/v1/devices/\(publicKey)"
+            "/device/v1/devices/\(publicKey)"
         case let .retry2FA(id: id, payload: _):
-            return "/device/v1/2fa/\(id)"
+            "/device/v1/2fa/\(id)"
         case let .deny2FA(id: id):
-            return "/device/v1/2fa/\(id)"
+            "/device/v1/2fa/\(id)"
         case let .approve2FA(id: id, payload: _):
-            return "/device/v1/2fa/\(id)/approve"
+            "/device/v1/2fa/\(id)/approve"
         }
     }
 

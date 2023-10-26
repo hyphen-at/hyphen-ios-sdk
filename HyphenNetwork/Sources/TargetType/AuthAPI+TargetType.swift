@@ -4,25 +4,25 @@ import Moya
 
 extension AuthAPI: TargetType {
     public var headers: [String: String]? {
-        return ["Content-type": "application/json"]
+        ["Content-type": "application/json"]
     }
 
     public var baseURL: URL {
-        return URL(string: HyphenNetworking.shared.baseUrl)!
+        URL(string: HyphenNetworking.shared.baseUrl)!
     }
 
     public var path: String {
         switch self {
         case .signIn2FA(payload: _):
-            return "/auth/v1/signin/2fa"
+            "/auth/v1/signin/2fa"
         case .signInChallenge(payload: _):
-            return "/auth/v1/signin/challenge"
+            "/auth/v1/signin/challenge"
         case .signInChallengeRespond(payload: _):
-            return "/auth/v1/signin/challenge/respond"
+            "/auth/v1/signin/challenge/respond"
         case .signUp(payload: _):
-            return "/auth/v1/signup"
+            "/auth/v1/signup"
         case .twoFactorFinish(payload: _):
-            return "/auth/v1/signin/2fa/finish"
+            "/auth/v1/signin/2fa/finish"
         }
     }
 

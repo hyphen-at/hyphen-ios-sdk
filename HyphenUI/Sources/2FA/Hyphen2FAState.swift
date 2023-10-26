@@ -23,7 +23,7 @@ class Hyphen2FAState: ObservableObject {
     }
 
     func reject2FA() {
-        guard let twoFactorAuth = twoFactorAuth else {
+        guard let twoFactorAuth else {
             HyphenLogger.shared.logger.critical("HyphenUI SDK internal error. UI state 'twoFactorAuth' is nil.")
             return
         }

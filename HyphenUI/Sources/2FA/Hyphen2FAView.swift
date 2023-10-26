@@ -169,7 +169,7 @@ struct Hyphen2FAView: View {
                 .padding(.bottom, 18)
             }
             .onAppear {
-                self.state.twoFactorAuth = twoFactorAuth
+                state.twoFactorAuth = twoFactorAuth
             }
 
             if state.isProcessing {

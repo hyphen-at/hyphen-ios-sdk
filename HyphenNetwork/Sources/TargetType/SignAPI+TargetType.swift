@@ -4,19 +4,19 @@ import Moya
 
 extension SignAPI: TargetType {
     public var headers: [String: String]? {
-        return ["Content-type": "application/json"]
+        ["Content-type": "application/json"]
     }
 
     public var baseURL: URL {
-        return URL(string: HyphenNetworking.shared.baseUrl)!
+        URL(string: HyphenNetworking.shared.baseUrl)!
     }
 
     public var path: String {
         switch self {
         case .signTransactionWithServerKey(message: _):
-            return "/sign/v1/cadence/transaction"
+            "/sign/v1/cadence/transaction"
         case .signTransactionWithPayMasterKey(message: _):
-            return "/sign/v1/cadence/paymaster"
+            "/sign/v1/cadence/paymaster"
         }
     }
 
@@ -27,7 +27,7 @@ extension SignAPI: TargetType {
     public var sampleData: Data {
         switch self {
         default:
-            return "".data(using: .utf8)!
+            "".data(using: .utf8)!
         }
     }
 

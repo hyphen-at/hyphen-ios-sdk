@@ -7,10 +7,10 @@ import Moya
 
 public extension HyphenNetworking {
     func signTransactionWithServerKey(message: String) async throws -> HyphenSignResult {
-        return try await signProvider.async.request(.signTransactionWithServerKey(message: message))
+        try await signProvider.async.request(.signTransactionWithServerKey(message: message))
     }
 
     func signTransactionWithPayMasterKey(message: String) async throws -> HyphenSignResult {
-        return try await signProvider.async.request(.signTransactionWithPayMasterKey(message: message))
+        try await signProvider.async.request(.signTransactionWithPayMasterKey(message: message))
     }
 }

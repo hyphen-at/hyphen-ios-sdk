@@ -4,17 +4,17 @@ import Moya
 
 extension AccountAPI: TargetType {
     public var headers: [String: String]? {
-        return ["Content-type": "application/json"]
+        ["Content-type": "application/json"]
     }
 
     public var baseURL: URL {
-        return URL(string: HyphenNetworking.shared.baseUrl)!
+        URL(string: HyphenNetworking.shared.baseUrl)!
     }
 
     public var path: String {
         switch self {
         case .getMyAccount:
-            return "/account/v1/me"
+            "/account/v1/me"
         }
     }
 
@@ -29,7 +29,7 @@ extension AccountAPI: TargetType {
     public var task: Task {
         switch self {
         case .getMyAccount:
-            return .requestPlain
+            .requestPlain
         }
     }
 }
