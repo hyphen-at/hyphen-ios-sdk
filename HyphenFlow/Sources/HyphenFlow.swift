@@ -47,8 +47,6 @@ public final class HyphenFlow: NSObject {
     public func makeSignedTransactionPayloadWithArguments(hyphenFlowCadence: HyphenFlowCadence, args: [Flow.Cadence.FValue]) async throws -> Flow.Transaction {
         configureFlow()
 
-        print(URL(string: HyphenNetworking.shared.baseUrl)!)
-
         let hyphenAccount = try await HyphenNetworking.shared.getMyAccount()
         let flowAddress = Flow.Address(hex: hyphenAccount.addresses.first!.address)
         let keys = try await HyphenNetworking.shared.getKeys()
