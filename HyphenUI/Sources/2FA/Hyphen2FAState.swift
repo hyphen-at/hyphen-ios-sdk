@@ -45,7 +45,7 @@ class Hyphen2FAState: ObservableObject {
             let cadenceScript = try! JSONDecoder().decode(HyphenFlowCadence.self, from: self.twoFactorAuth!.request.message.data(using: .utf8)!)
 
             let tx = try await HyphenFlow.shared.makeSignedTransactionPayloadWithoutArguments(
-                hyphenFlowCadence: HyphenFlowCadence(cadence: cadenceScript.cadence)
+                hyphenFlowCadence: cadenceScript
             )
             let txId = try await HyphenFlow.shared.sendSignedTransaction(tx)
             HyphenLogger.shared.logger.info("Transaction hash -> \(txId)")

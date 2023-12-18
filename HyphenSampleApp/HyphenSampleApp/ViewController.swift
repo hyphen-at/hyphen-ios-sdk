@@ -50,6 +50,12 @@ class ViewController: UIViewController {
         drawKeyManager()
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+        navigationController?.setNavigationBarHidden(true, animated: true)
+    }
+
     @objc func didNetworkChangeValue(segment: UISegmentedControl) {
         if segment.selectedSegmentIndex == 0 {
             Hyphen.shared.network = .testnet
@@ -93,12 +99,8 @@ class ViewController: UIViewController {
             import HelloWorld from 0xe242ccfb4b8ea3e2
 
             transaction(test: String, testInt: HelloWorld.SomeStruct) {
-                prepare(signer1: AuthAccount, signer2: AuthAccount, signer3: AuthAccount) {
+                prepare(signer1: AuthAccount) {
                      log(signer1.address)
-                     log(signer2.address)
-                     log(signer3.address)
-                     log(test)
-                     log(testInt)
                 }
             }
             """
@@ -134,6 +136,12 @@ class ViewController: UIViewController {
 
                 let txHash = try await HyphenFlow.shared.sendSignedTransaction(transaction)
                 signTransactionResultLabel.text = "TxHash -> \(txHash)"
+                signTransactionResultLabel.sizeToFit()
+                signTransactionResultLabel.snp.updateConstraints { make in
+                    make.width.equalTo(signTransactionResultLabel.intrinsicContentSize.width)
+                }
+
+                print("[TxHash] \(txHash)")
 
                 hideLoadingIndicator()
 

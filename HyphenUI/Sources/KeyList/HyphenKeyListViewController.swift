@@ -6,7 +6,9 @@ public class HyphenKeyListViewController: UIViewController {
     override public func viewDidLoad() {
         super.viewDidLoad()
 
-        let hostingController = UIHostingController(rootView: HyphenKeyListScreen())
+        title = "Key Manager"
+
+        let hostingController = UIHostingController(rootView: HyphenKeyListScreen().hostingControllerPresentor())
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         addChild(hostingController)
         view.addSubview(hostingController.view)

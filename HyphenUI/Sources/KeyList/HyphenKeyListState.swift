@@ -8,12 +8,25 @@ class HyphenKeyListState: ObservableObject {
 
     @Published var isLoading: Bool = true
 
+    @Published private var pendingRevokeKey: HyphenKey? = nil
+
+    @Published var isShowRevokeKeyConfirmSheet: Bool = false
+
     init() {
         isLoading = true
 
         Task {
-            keys = try await HyphenNetworking.shared.getKeys()
-            isLoading = false
+            let fetchKeysResult = try await HyphenNetworking.shared.getKeys()
+
+            DispatchQueue.main.async {
+                self.keys = fetchKeysResult
+                self.isLoading = false
+            }
         }
+    }
+
+    func pendingRevokeKey(_ key: HyphenKey?) {
+        pendingRevokeKey = key
+        isShowRevokeKeyConfirmSheet = key != nil
     }
 }

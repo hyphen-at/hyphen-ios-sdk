@@ -52,11 +52,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B1260CFDC7FA139F3C573C26 /* xcschemes */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = xcschemes;
+			path = HyphenSampleApp.xcodeproj/project.xcworkspace/xcuserdata/dsa28s.xcuserdatad/xcschemes;
+			sourceTree = "<group>";
+		};
 		BAA0BE412AE8C86C0092BED6 = {
 			isa = PBXGroup;
 			children = (
 				BAA0BE4C2AE8C86C0092BED6 /* HyphenSampleApp */,
 				BAA0BE4B2AE8C86C0092BED6 /* Products */,
+				B1260CFDC7FA139F3C573C26 /* xcschemes */,
 			);
 			sourceTree = "<group>";
 		};
@@ -137,7 +146,7 @@
 			);
 			mainGroup = BAA0BE412AE8C86C0092BED6;
 			packageReferences = (
-				BAA0BE612AE8CA8A0092BED6 /* XCLocalSwiftPackageReference ".." */,
+				BAA0BE612AE8CA8A0092BED6 /* XCLocalSwiftPackageReference */,
 				BA198B332AE8CF210002C3BB /* XCRemoteSwiftPackageReference "SnapKit" */,
 			);
 			productRefGroup = BAA0BE4B2AE8C86C0092BED6 /* Products */;
@@ -395,7 +404,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		BAA0BE612AE8CA8A0092BED6 /* XCLocalSwiftPackageReference ".." */ = {
+		BAA0BE612AE8CA8A0092BED6 /* XCLocalSwiftPackageReference */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ..;
 		};

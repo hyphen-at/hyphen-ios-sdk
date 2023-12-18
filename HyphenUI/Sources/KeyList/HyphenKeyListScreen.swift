@@ -1,37 +1,88 @@
 import HyphenCore
+import NativePartialSheet
 import SwiftUI
 
 struct HyphenKeyListScreen: View {
     @StateObject var state: HyphenKeyListState = .init()
 
+    @State var detent: Detent = .height(300)
+
     var body: some View {
-        NavigationView {
-            VStack(spacing: 0) {
-                if !state.isLoading {
-                    List {
-                        ForEach(state.keys, id: \.self) { key in
-                            HyphenKeyItem(key: key)
-                                .listRowInsets(EdgeInsets())
-                                .listRowSeparator(.hidden)
-                        }
-                        Rectangle()
-                            .foregroundColor(.clear)
-                            .frame(maxWidth: .infinity, minHeight: 1, maxHeight: 1)
-                            .background(Color(uiColor: .lightGray))
+        ZStack {
+            if !state.isLoading {
+                List {
+                    ForEach(state.keys, id: \.self) { key in
+                        HyphenKeyItem(key: key)
                             .listRowInsets(EdgeInsets())
                             .listRowSeparator(.hidden)
+                            .swipeActions {
+                                if key.publicKey != HyphenCryptography.getPublicKeyHex() {
+                                    Button(action: {
+                                        state.pendingRevokeKey(key)
+                                    }) {
+                                        Text("Revoke")
+                                    }
+                                    .tint(Color("HyphenRevokeBackgroundColor", bundle: .hyphenColorResource))
+                                }
+                            }
                     }
-                    .listStyle(.plain)
-                } else {
-                    ProgressView()
-                        .controlSize(.large)
                 }
+                .listStyle(.plain)
+            } else {
+                ProgressView()
+                    .controlSize(.large)
             }
-            .navigationTitle(Text("Key Manager"))
-            .navigationBarBackButtonHidden(false)
-            .navigationBarTitleDisplayMode(.inline)
-            .accentColor(.black)
+
+            Color.clear
+                .sheet(isPresented: $state.isShowRevokeKeyConfirmSheet) {
+                    VStack(spacing: 0) {
+                        HStack {
+                            Text("Revoke Key")
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundColor(Color("HyphenPrimaryLabelColor", bundle: .hyphenColorResource))
+                            Spacer()
+                        }
+                        HStack {
+                            Text("Are you sure revoke the key?")
+                                .font(.system(size: 16))
+                                .foregroundColor(Color("HyphenSecondaryLabelColor", bundle: .hyphenColorResource))
+                            Spacer()
+                        }
+                        .padding(.top, 6)
+                        VStack(alignment: .leading, spacing: 32) {
+                            HStack {
+                                Text("Key Name")
+                                    .font(.system(size: 16, weight: .medium))
+                                Spacer()
+                            }
+                        }
+                        .padding(20)
+                        .background(Color("HyphenPanelBackgroundColor", bundle: .hyphenColorResource))
+
+                        .cornerRadius(12)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .inset(by: 0.5)
+                                .stroke(Color("HyphenPanelBorderColor", bundle: .hyphenColorResource), lineWidth: 1)
+                        )
+                        Spacer()
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 44)
+                    .padding(.bottom, 18)
+                }
+                .presentationDetents([$detent.wrappedValue], selection: $detent)
+                .presentationDragIndicator(.visible)
+                .interactiveDismissDisabled(
+                    false,
+                    onWillDismiss: {},
+                    onDidDismiss: {
+                        state.pendingRevokeKey(nil)
+                    }
+                )
+                .allowsHitTesting(false)
         }
+        .accentColor(.black)
     }
 }
 
@@ -40,20 +91,19 @@ struct HyphenKeyItem: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Rectangle()
-                .foregroundColor(.clear)
-                .frame(maxWidth: .infinity, minHeight: 1, maxHeight: 1)
-                .background(Color(uiColor: .lightGray))
-                .padding(.top, 20)
             HStack(alignment: .top, spacing: 10) {
                 if key.type == .serverKey {
                     Image("cloudy", bundle: .module)
                         .resizable()
+                        .renderingMode(.template)
+                        .foregroundColor(Color("HyphenCloudIconTintColor", bundle: .hyphenColorResource))
                         .scaledToFit()
                         .frame(width: 18, height: 18)
                 } else if key.type == .userKey {
                     Image("key", bundle: .module)
                         .resizable()
+                        .renderingMode(.template)
+                        .foregroundColor(Color("HyphenKeyIconTintColor", bundle: .hyphenColorResource))
                         .scaledToFit()
                         .frame(width: 18, height: 18)
                 }
@@ -61,19 +111,20 @@ struct HyphenKeyItem: View {
                     HStack {
                         Text(key.name)
                             .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(Color(uiColor: .label))
+                            .foregroundColor(Color("HyphenPrimaryLabelColor", bundle: .hyphenColorResource))
                         Spacer()
                     }
                     HStack {
                         Text("Last Used: \(formatDate(stringToDate(from: key.lastUsedAt)!))")
                             .font(.system(size: 12))
-                            .foregroundColor(Color(red: 0.4, green: 0.4, blue: 0.4))
+                            .foregroundColor(Color("HyphenSecondaryLabelColor", bundle: .hyphenColorResource))
                         Spacer()
                     }
                     HStack {
-                        Text(key.type == .serverKey ? "SERVER KEY" : "DEVICE KEY")
+                        Text(key.type == .serverKey ? "SERVER KEY" : key.type == .recoverKey ? "RECOVERY KEY" : "DEVICE KEY")
                             .font(.system(size: 10, weight: .heavy))
-                            .foregroundColor(Color(red: 0.4, green: 0.4, blue: 0.4))
+                            .foregroundColor(Color("HyphenSecondaryLabelColor", bundle: .hyphenColorResource))
+                            .padding(.bottom, 20)
                         Spacer()
                     }
                 }
@@ -81,6 +132,11 @@ struct HyphenKeyItem: View {
             }
             .padding(.horizontal, 16)
             .padding(.top, 20)
+            Rectangle()
+                .foregroundColor(.clear)
+                .frame(maxWidth: .infinity, minHeight: 1, maxHeight: 1)
+                .background(Color("HyphenDividerColor", bundle: .hyphenColorResource))
+                .padding(.leading, 44)
         }
     }
 
@@ -105,6 +161,16 @@ struct HyphenKeyItem: View {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         return formatter.date(from: string)
+    }
+}
+
+extension HyphenKeyListScreen: SwiftUIViewHostingCompatible {
+    func transformNavigationController(_ navigationController: UINavigationController) {
+        navigationController.navigationBar.prefersLargeTitles = false
+        navigationController.navigationBar.topItem?.backButtonDisplayMode = .minimal
+        navigationController.navigationBar.backItem?.title = ""
+        navigationController.navigationBar.tintColor = .init(named: "HyphenCommonAppBarTintColor", in: .hyphenColorResource, compatibleWith: .current)
+        navigationController.isNavigationBarHidden = false
     }
 }
 
