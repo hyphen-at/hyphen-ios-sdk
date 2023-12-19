@@ -45,7 +45,7 @@ struct Hyphen2FAView: View {
                 HStack {
                     Text("\(state.twoFactorAuth?.request.app.appName ?? "") requires to\nSign-In")
                         .font(.system(size: 24, weight: .medium))
-                        .foregroundColor(Color(red: 0.06, green: 0.06, blue: 0.06))
+                        .foregroundColor(Color("HyphenPrimaryLabelColor", bundle: .hyphenColorResource))
                     Spacer()
                 }
                 .padding(.top, 16)
@@ -53,7 +53,7 @@ struct Hyphen2FAView: View {
                 HStack {
                     Text("\(state.twoFactorAuth?.request.srcDevice.deviceModel ?? "") is trying to sign-in into \(state.twoFactorAuth?.request.app.appName ?? "") in the \(state.twoFactorAuth?.request.userOpInfo.signIn.email ?? "") account.")
                         .font(.system(size: 16))
-                        .foregroundColor(Color(red: 0.12, green: 0.14, blue: 0.16))
+                        .foregroundColor(Color("HyphenSecondaryLabelColor", bundle: .hyphenColorResource))
                     Spacer()
                 }
                 .padding(.horizontal, 20)
@@ -65,13 +65,13 @@ struct Hyphen2FAView: View {
                     HStack {
                         Text("Device")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(red: 0.06, green: 0.06, blue: 0.06))
+                            .foregroundColor(Color("HyphenPrimaryLabelColor", bundle: .hyphenColorResource))
                         Spacer()
                     }
                     HStack {
                         Text(state.twoFactorAuth?.request.srcDevice.deviceModel ?? "")
                             .font(.system(size: 16))
-                            .foregroundColor(Color(red: 0.4, green: 0.4, blue: 0.4))
+                            .foregroundColor(Color("HyphenSecondaryLabelColor", bundle: .hyphenColorResource))
                         Spacer()
                     }
                     .padding(.top, 4)
@@ -80,13 +80,13 @@ struct Hyphen2FAView: View {
                     HStack {
                         Text("App Name")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(red: 0.06, green: 0.06, blue: 0.06))
+                            .foregroundColor(Color("HyphenPrimaryLabelColor", bundle: .hyphenColorResource))
                         Spacer()
                     }
                     HStack {
                         Text(state.twoFactorAuth?.request.app.appName ?? "")
                             .font(.system(size: 16))
-                            .foregroundColor(Color(red: 0.4, green: 0.4, blue: 0.4))
+                            .foregroundColor(Color("HyphenSecondaryLabelColor", bundle: .hyphenColorResource))
                         Spacer()
                     }
                     .padding(.top, 4)
@@ -95,13 +95,13 @@ struct Hyphen2FAView: View {
                     HStack {
                         Text("Near")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(red: 0.06, green: 0.06, blue: 0.06))
+                            .foregroundColor(Color("HyphenPrimaryLabelColor", bundle: .hyphenColorResource))
                         Spacer()
                     }
                     HStack {
                         Text(state.twoFactorAuth?.request.userOpInfo.signIn.location ?? "")
                             .font(.system(size: 16))
-                            .foregroundColor(Color(red: 0.4, green: 0.4, blue: 0.4))
+                            .foregroundColor(Color("HyphenSecondaryLabelColor", bundle: .hyphenColorResource))
                         Spacer()
                     }
                     .padding(.top, 4)
@@ -110,24 +110,24 @@ struct Hyphen2FAView: View {
                     HStack {
                         Text("Time")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(red: 0.06, green: 0.06, blue: 0.06))
+                            .foregroundColor(Color("HyphenPrimaryLabelColor", bundle: .hyphenColorResource))
                         Spacer()
                     }
                     HStack {
                         Text("Just now")
                             .font(.system(size: 16))
-                            .foregroundColor(Color(red: 0.4, green: 0.4, blue: 0.4))
+                            .foregroundColor(Color("HyphenSecondaryLabelColor", bundle: .hyphenColorResource))
                         Spacer()
                     }
                     .padding(.top, 4)
                 }
                 .padding(20)
-                .background(Color(red: 0.94, green: 0.94, blue: 0.95))
+                .background(Color("HyphenPanelBackgroundColor", bundle: .hyphenColorResource))
                 .cornerRadius(12)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
                         .inset(by: 0.5)
-                        .stroke(Color(red: 0.89, green: 0.89, blue: 0.89), lineWidth: 1)
+                        .stroke(Color("HyphenPanelBorderColor", bundle: .hyphenColorResource), lineWidth: 1)
                 )
                 .padding(.horizontal, 16)
 
