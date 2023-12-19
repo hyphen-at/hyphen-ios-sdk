@@ -14,21 +14,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         HyphenUI.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
 
         // Push notification
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, error in
             if let error {
                 print(error)
+                print("===== [HyphenSDKDemo] remote notification permission isGranted = false")
             } else {
                 DispatchQueue.main.async {
                     UNUserNotificationCenter.current().delegate = self
                     application.registerForRemoteNotifications()
+
+                    print("===== [HyphenSDKDemo] remote notification permission isGranted = true")
                 }
             }
-
-            print("===== [HyphenSDKDemo] remote notification permission isGranted = \(granted)")
         }
 
         // Push notification when app is not running
-        if let notificationInfo = launchOptions?[UIApplication.LaunchOptionsKey.remoteNotification] as? [AnyHashable: Any] {
+        if let notificationInfo = launchOptions?[UIApplication.LaunchOptionsKey.remoteNotification] as? [String: Any] {
             Task {
                 await Hyphen.shared.handleNotificationWhenAppNotRunning(userInfo: notificationInfo)
             }
@@ -51,9 +52,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         return .newData
     }
 
-    func userNotificationCenter(_: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
         let userInfo = notification.request.content.userInfo
         print(userInfo)
+
+        await Hyphen.shared.userNotificationCenter(center, willPresent: notification)
 
         return [[.alert, .sound, .badge, .list]]
     }

@@ -18,6 +18,10 @@ public extension Hyphen {
         await handleNotification(userInfo: userInfo)
     }
 
+    func userNotificationCenter(_: UNUserNotificationCenter, willPresent notification: UNNotification) async {
+        await handleNotification(userInfo: notification.request.content.userInfo)
+    }
+
     func userNotificationCenter(_: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
         let userInfo = response.notification.request.content.userInfo
 

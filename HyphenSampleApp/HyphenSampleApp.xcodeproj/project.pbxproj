@@ -146,7 +146,7 @@
 			);
 			mainGroup = BAA0BE412AE8C86C0092BED6;
 			packageReferences = (
-				BAA0BE612AE8CA8A0092BED6 /* XCLocalSwiftPackageReference */,
+				BAA0BE612AE8CA8A0092BED6 /* XCLocalSwiftPackageReference ".." */,
 				BA198B332AE8CF210002C3BB /* XCRemoteSwiftPackageReference "SnapKit" */,
 			);
 			productRefGroup = BAA0BE4B2AE8C86C0092BED6 /* Products */;
@@ -404,7 +404,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		BAA0BE612AE8CA8A0092BED6 /* XCLocalSwiftPackageReference */ = {
+		BAA0BE612AE8CA8A0092BED6 /* XCLocalSwiftPackageReference ".." */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ..;
 		};
