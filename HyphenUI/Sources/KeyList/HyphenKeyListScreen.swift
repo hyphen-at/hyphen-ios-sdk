@@ -5,32 +5,37 @@ import SwiftUI
 struct HyphenKeyListScreen: View {
     @StateObject var state: HyphenKeyListState = .init()
 
-    @State var detent: Detent = .height(300)
+    @State var detent: Detent = .height(270)
 
     var body: some View {
         ZStack {
-            if !state.isLoading {
-                List {
-                    ForEach(state.keys, id: \.self) { key in
-                        HyphenKeyItem(key: key)
-                            .listRowInsets(EdgeInsets())
-                            .listRowSeparator(.hidden)
-                            .swipeActions {
-                                if key.publicKey != HyphenCryptography.getPublicKeyHex() {
-                                    Button(action: {
-                                        state.pendingRevokeKey(key)
-                                    }) {
-                                        Text("Revoke")
-                                    }
-                                    .tint(Color("HyphenRevokeBackgroundColor", bundle: .hyphenColorResource))
+            List {
+                ForEach(state.keys, id: \.self) { key in
+                    HyphenKeyItem(key: key)
+                        .listRowInsets(EdgeInsets())
+                        .listRowSeparator(.hidden)
+                        .swipeActions {
+                            if key.publicKey != HyphenCryptography.getPublicKeyHex(), key.type == .userKey {
+                                Button(action: {
+                                    state.pendingRevokeKey(key)
+                                }) {
+                                    Text("Revoke")
                                 }
+                                .tint(Color("HyphenRevokeBackgroundColor", bundle: .hyphenColorResource))
                             }
-                    }
+                        }
                 }
-                .listStyle(.plain)
-            } else {
-                ProgressView()
-                    .controlSize(.large)
+            }
+            .listStyle(.plain)
+
+            if state.isLoading {
+                ZStack {
+                    ProgressView()
+                        .controlSize(.large)
+                }
+                .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+                .background(Color.black.opacity(0.1))
+                .allowsHitTesting(true)
             }
 
             Color.clear
@@ -49,22 +54,62 @@ struct HyphenKeyListScreen: View {
                             Spacer()
                         }
                         .padding(.top, 6)
-                        VStack(alignment: .leading, spacing: 32) {
+                        .padding(.bottom, 20)
+                        VStack(alignment: .leading, spacing: 4) {
                             HStack {
                                 Text("Key Name")
                                     .font(.system(size: 16, weight: .medium))
                                 Spacer()
                             }
+                            HStack {
+                                Text(state.pendingRevokeKey?.name ?? "")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(Color("HyphenSecondaryLabelColor", bundle: .hyphenColorResource))
+                                Spacer()
+                            }
                         }
                         .padding(20)
                         .background(Color("HyphenPanelBackgroundColor", bundle: .hyphenColorResource))
-
                         .cornerRadius(12)
                         .overlay(
                             RoundedRectangle(cornerRadius: 12)
                                 .inset(by: 0.5)
                                 .stroke(Color("HyphenPanelBorderColor", bundle: .hyphenColorResource), lineWidth: 1)
                         )
+                        HStack(spacing: 8) {
+                            Button(action: {
+                                state.pendingRevokeKey(nil)
+                            }) {
+                                HStack(alignment: .bottom, spacing: 8) {
+                                    Spacer()
+                                    Text("Refuse")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(Color(red: 0.12, green: 0.58, blue: 0.94))
+                                    Spacer()
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .background(Color(red: 0.94, green: 0.94, blue: 0.95))
+                                .cornerRadius(12)
+                            }
+                            Button(action: {
+                                state.revokeKey()
+                            }) {
+                                HStack(alignment: .bottom, spacing: 8) {
+                                    Spacer()
+                                    Text("Approve")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(Color(red: 0.98, green: 0.98, blue: 0.98))
+                                    Spacer()
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                                .background(Color(red: 0.12, green: 0.58, blue: 0.94))
+                                .cornerRadius(12)
+                            }
+                        }
+                        .padding(.top, 28)
+                        .padding(.bottom, 18)
                         Spacer()
                     }
                     .padding(.horizontal, 16)

@@ -15,11 +15,18 @@ extension KeyAPI: TargetType {
         switch self {
         case .getKeys:
             "/key/v1/keys"
+        case let .deletePublicKey(key):
+            "/key/v1/keys/\(key)"
         }
     }
 
     public var method: Moya.Method {
-        .get
+        switch self {
+        case .getKeys:
+            .get
+        case .deletePublicKey:
+            .delete
+        }
     }
 
     public var sampleData: Data {
@@ -29,7 +36,9 @@ extension KeyAPI: TargetType {
     public var task: Task {
         switch self {
         case .getKeys:
-            .requestPlain
+            fallthrough
+        case .deletePublicKey:
+            return .requestPlain
         }
     }
 }
