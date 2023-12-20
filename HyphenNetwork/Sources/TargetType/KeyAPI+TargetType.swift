@@ -15,6 +15,8 @@ extension KeyAPI: TargetType {
         switch self {
         case .getKeys:
             "/key/v1/keys"
+        case .registerRecoveryKey:
+            "/key/v1/recovery"
         case let .deletePublicKey(key):
             "/key/v1/keys/\(key)"
         }
@@ -24,6 +26,8 @@ extension KeyAPI: TargetType {
         switch self {
         case .getKeys:
             .get
+        case .registerRecoveryKey:
+            .post
         case .deletePublicKey:
             .delete
         }
@@ -39,6 +43,16 @@ extension KeyAPI: TargetType {
             fallthrough
         case .deletePublicKey:
             return .requestPlain
+        case let .registerRecoveryKey(pubKey):
+            let json = try! JSONEncoder().encode(
+                HyphenRequestRegisterRecoveryKey(
+                    recoveryKey: .init(
+                        publicKey: pubKey,
+                        cloudKey: .init(accountName: "iCloud")
+                    )
+                )
+            )
+            return .requestData(json)
         }
     }
 }

@@ -14,9 +14,6 @@ typealias Task = _Concurrency.Task
 public final class HyphenAuthenticate: NSObject {
     public static let shared: HyphenAuthenticate = .init()
 
-//    @_spi(HyphenInternal)
-//    public var authorizationCallback: (ASAuthorization) -> Void = { _ in }
-
     private var _account: HyphenAccount? = nil
 
     override private init() {}
@@ -105,63 +102,6 @@ public final class HyphenAuthenticate: NSObject {
                     try await requestSignIn2FA(idToken: idToken, userKey: hyphenUserKey)
                 }
             }
-
-            // process hyphen authenticate process
-
-//            do {
-//                let result = try await HyphenNetworking.shared.signIn(token: idToken)
-//                Hyphen.shared.saveCredential(result.credentials)
-//                Hyphen.shared.saveWalletAddress(result.account.addresses.first!.address)
-//                print(result)
-//            } catch {
-//                if let convertedMoyaError = error as? MoyaError,
-//                   let response = convertedMoyaError.response
-//                {
-//                    let errorBody = String(data: response.data, encoding: .utf8)
-//                    if errorBody?.contains("please sign up") == true {
-//                        var error: Unmanaged<CFError>?
-//                        if let cfdata = SecKeyCopyExternalRepresentation(HyphenCryptography.getPubKey(), &error) {
-//                            let data: Data = cfdata as Data
-//                            let publicKey = data.hexEncodedString()
-//
-//                            print(publicKey)
-//                            print(publicKey.count)
-//
-//                            let startIdx = publicKey.index(publicKey.startIndex, offsetBy: 2)
-//                            let publicKeyResult = String(publicKey[startIdx...])
-//
-//                            let userKey = await HyphenUserKey(
-//                                type: .device,
-//                                device: HyphenDevice(
-//                                    name: UIDevice.current.name,
-//                                    osName: .iOS,
-//                                    osVersion: HyphenDeviceInformation.osVersion,
-//                                    deviceManufacturer: "Apple",
-//                                    deviceModel: HyphenDeviceInformation.modelName,
-//                                    lang: Locale.preferredLanguages[0],
-//                                    type: .mobile
-//                                ),
-//                                publicKey: publicKeyResult,
-//                                wallet: nil
-//                            )
-//
-//                            do {
-//                                let result = try await HyphenNetworking.shared.signUp(token: idToken, userKey: userKey)
-//                                Hyphen.shared.saveCredential(result.credentials)
-//                                Hyphen.shared.saveWalletAddress(result.account.addresses.first!.address)
-//
-//                                print(result)
-//                            } catch {
-//                                if let convertedMoyaError = error as? MoyaError,
-//                                   let response = convertedMoyaError.response
-//                                {
-//                                    let errorBody = String(data: response.data, encoding: .utf8)
-//                                    print(errorBody)
-//                                }
-//
-//                                throw error
-//                            }
-//                        }
         }
     }
 
@@ -239,6 +179,9 @@ public final class HyphenAuthenticate: NSObject {
 
                         Hyphen.shared.saveCredential(result.credentials)
 
+                        HyphenLogger.shared.logger.info("Generate recovery key and register your recovery key...")
+                        try await generateRecoveryKeyAndRegisterKey()
+
                         print(result)
                     } catch {
                         print(error)
@@ -251,6 +194,15 @@ public final class HyphenAuthenticate: NSObject {
                 throw error
             }
         }
+    }
+
+    private func generateRecoveryKeyAndRegisterKey() async throws {
+        HyphenCryptography.generateRecoveryKey()
+
+        let recoveryPublicKeyHex = HyphenCryptography.getRecoveryPublicKeyHex()
+        HyphenLogger.shared.logger.info("[RecoveryPublicKey] \(HyphenCryptography.getRecoveryPublicKeyHex())")
+
+        try await HyphenNetworking.shared.registerRecoveryKey(recoveryPublicKeyHex)
     }
 
     private func getHyphenUserKey() async throws -> HyphenUserKey? {
