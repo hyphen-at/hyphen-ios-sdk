@@ -151,6 +151,13 @@ struct HyphenKeyItem: View {
                         .foregroundColor(Color("HyphenKeyIconTintColor", bundle: .hyphenColorResource))
                         .scaledToFit()
                         .frame(width: 18, height: 18)
+                } else {
+                    Image("recover-key", bundle: .module)
+                        .resizable()
+                        .renderingMode(.template)
+                        .foregroundColor(Color("HyphenRecoverKeyIconTintColor", bundle: .hyphenColorResource))
+                        .scaledToFit()
+                        .frame(width: 18, height: 18)
                 }
                 VStack(spacing: 6) {
                     HStack {
