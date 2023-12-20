@@ -6,7 +6,7 @@ public class HyphenCryptography: NSObject {
     override private init() {}
 
     static let privTag = Bundle.main.bundleIdentifier!
-    static let privRecoveryTag = "\(privTag).recoveryKey"
+    static let privRecoveryTag = "\(privTag).recoveryKey.v2"
     static let SecureEnclaveAccess = SecAccessControlCreateWithFlags(
         kCFAllocatorDefault,
         kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
@@ -42,7 +42,7 @@ public class HyphenCryptography: NSObject {
             kSecAttrIsPermanent as String: true,
             kSecAttrApplicationTag as String: privRecoveryTag,
         ],
-        kSecAttrSynchronizable as String: true,
+        kSecAttrSynchronizable as String: kCFBooleanTrue,
     ]
 
     public class func isDeviceKeyExist() -> Bool {
@@ -113,7 +113,7 @@ public class HyphenCryptography: NSObject {
             kSecAttrApplicationTag as String: privRecoveryTag,
             kSecAttrKeyClass as String: kSecAttrKeyClassPrivate,
             kSecReturnRef as String: true,
-            kSecAttrSynchronizable as String: true,
+            kSecAttrSynchronizable as String: kCFBooleanTrue,
         ]
 
         var result: CFTypeRef?
