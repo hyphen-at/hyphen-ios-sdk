@@ -6,6 +6,7 @@ public class HyphenCryptography: NSObject {
     override private init() {}
 
     static let privTag = Bundle.main.bundleIdentifier!
+    static let privRecoveryTag = "\(privTag).recoveryKey"
     static let SecureEnclaveAccess = SecAccessControlCreateWithFlags(
         kCFAllocatorDefault,
         kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
@@ -32,6 +33,16 @@ public class HyphenCryptography: NSObject {
             kSecAttrIsPermanent as String: true,
             kSecAttrApplicationTag as String: privTag,
         ],
+    ]
+
+    static var RecoveryAttribute: [String: Any] = [
+        kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
+        kSecAttrKeySizeInBits as String: 256,
+        kSecPrivateKeyAttrs as String: [
+            kSecAttrIsPermanent as String: true,
+            kSecAttrApplicationTag as String: privRecoveryTag,
+        ],
+        kSecAttrSynchronizable as String: true,
     ]
 
     public class func isDeviceKeyExist() -> Bool {
@@ -94,9 +105,68 @@ public class HyphenCryptography: NSObject {
         return privKey
     }
 
+    @_spi(HyphenInternal)
+    public class func getRecoveryPubKey() -> SecKey {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassKey,
+            kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
+            kSecAttrApplicationTag as String: privRecoveryTag,
+            kSecAttrKeyClass as String: kSecAttrKeyClassPrivate,
+            kSecReturnRef as String: true,
+            kSecAttrSynchronizable as String: true,
+        ]
+
+        var result: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+
+        if status != errSecSuccess {
+            HyphenLogger.shared.logger.error("recovery priv key get failed.. generate new key")
+            generateRecoveryKey()
+            SecItemCopyMatching(query as CFDictionary, &result)
+        }
+        let privKey: SecKey = result as! SecKey
+        let pubKey = SecKeyCopyPublicKey(privKey)!
+        return pubKey
+    }
+
+    @_spi(HyphenInternal)
+    public class func getRecoveryPrivKey() -> SecKey {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassKey,
+            kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
+            kSecAttrApplicationTag as String: privRecoveryTag,
+            kSecAttrKeyClass as String: kSecAttrKeyClassPrivate,
+            kSecReturnRef as String: true,
+            kSecAttrSynchronizable as String: true,
+        ]
+
+        var result: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        if status != errSecSuccess {
+            HyphenLogger.shared.logger.error("priv key get failed.. generate new key")
+            SecItemDelete(query as CFDictionary)
+            generateKey()
+            let new = SecItemCopyMatching(query as CFDictionary, &result)
+            print(new)
+        }
+        let privKey: SecKey = result as! SecKey
+        return privKey
+    }
+
     public class func signData(_ data: Data) -> Data? {
         let algorithm = SecKeyAlgorithm.ecdsaSignatureMessageX962SHA256
         let derSignature = SecKeyCreateSignature(getPrivKey(), algorithm, data as CFData, nil) as? Data
+
+        if let sig = derSignature {
+            return try! P256.Signing.ECDSASignature(derRepresentation: sig).rawRepresentation
+        } else {
+            return nil
+        }
+    }
+
+    public class func signDataWithRecoveryKey(_ data: Data) -> Data? {
+        let algorithm = SecKeyAlgorithm.ecdsaSignatureMessageX962SHA256
+        let derSignature = SecKeyCreateSignature(getRecoveryPrivKey(), algorithm, data as CFData, nil) as? Data
 
         if let sig = derSignature {
             return try! P256.Signing.ECDSASignature(derRepresentation: sig).rawRepresentation
@@ -127,6 +197,14 @@ public class HyphenCryptography: NSObject {
         var error: Unmanaged<CFError>?
         // if device has not secure enclave, create normal keypair and save normal keychain
         _ = SecKeyCreateRandomKey(NonEnclaveAttribute as CFDictionary, &error)
+    }
+
+    @_spi(HyphenInternal)
+    public class func generateRecoveryKey() {
+        var error: Unmanaged<CFError>?
+        _ = SecKeyCreateRandomKey(RecoveryAttribute as CFDictionary, &error)
+
+        print(error)
     }
 
     @_spi(HyphenInternal)
@@ -183,6 +261,25 @@ public class HyphenCryptography: NSObject {
     public class func getPublicKeyHex() -> String {
         var error: Unmanaged<CFError>?
         guard let cfdata = SecKeyCopyExternalRepresentation(getPubKey(), &error) else {
+            return ""
+        }
+
+        guard error == nil else {
+            return ""
+        }
+
+        let data: Data = cfdata as Data
+        let encodedPublicKey = data.hexEncodedString()
+
+        let startIdx = encodedPublicKey.index(encodedPublicKey.startIndex, offsetBy: 2)
+        let publicKey = String(encodedPublicKey[startIdx...])
+
+        return publicKey
+    }
+
+    public class func getRecoveryPublicKeyHex() -> String {
+        var error: Unmanaged<CFError>?
+        guard let cfdata = SecKeyCopyExternalRepresentation(getRecoveryPubKey(), &error) else {
             return ""
         }
 
