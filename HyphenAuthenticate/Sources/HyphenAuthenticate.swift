@@ -1,6 +1,4 @@
 import AuthenticationServices
-// import CryptorECC
-// import CBORCoding
 import FirebaseAuth
 import FirebaseMessaging
 import Foundation
@@ -54,16 +52,66 @@ public final class HyphenAuthenticate: NSObject {
             HyphenLogger.shared.logger.debug("FIDToken -> \(idToken)")
 
             if !HyphenCryptography.isDeviceKeyExist() {
-                HyphenLogger.shared.logger.info("Hyphen device key not found! Generate new device key...")
+                Bus<HyphenEventBusType>.post(.showAccountRecoveryMethodModal)
 
-                HyphenCryptography.generateKey()
+                let accountRecoveryMethod = try await withUnsafeThrowingContinuation { continuation in
+                    Bus<HyphenEventBusType>.register(self) { event in
 
-                guard let hyphenUserKey = try await getHyphenUserKey() else {
-                    HyphenLogger.shared.logger.critical("Hyphen SDK error occured. unexpected error. getHyphenUserKey() == nil")
-                    throw HyphenSdkError.internalSdkError
+                        switch event {
+                        case .selectAccountRecoveryMethod2FA:
+                            continuation.resume(returning: "2fa")
+                        case .selectAccountRecoveryMethodRecoveryKey:
+                            continuation.resume(returning: "recovery-key")
+                        default:
+                            break
+                        }
+                    }
                 }
 
-                try await requestSignIn2FA(idToken: idToken, userKey: hyphenUserKey)
+                if accountRecoveryMethod == "2fa" {
+                    HyphenLogger.shared.logger.info("User select account recovery option to 2fa.")
+                    HyphenLogger.shared.logger.info("Hyphen device key not found! Generate new device key...")
+
+                    HyphenCryptography.generateKey()
+
+                    guard let hyphenUserKey = try await getHyphenUserKey() else {
+                        HyphenLogger.shared.logger.critical("Hyphen SDK error occured. unexpected error. getHyphenUserKey() == nil")
+                        throw HyphenSdkError.internalSdkError
+                    }
+
+                    try await requestSignIn2FA(idToken: idToken, userKey: hyphenUserKey)
+                } else {
+                    HyphenLogger.shared.logger.info("Request authenticate challenge with recovery key...")
+
+                    let hyphenRecoveryPublicKey = HyphenCryptography.getRecoveryPublicKeyHex()
+
+                    do {
+                        let challengeRequest = try await HyphenNetworking.shared.signInChallenge(
+                            payload: HyphenRequestSignInChallenge(
+                                challengeType: "recoveryKey",
+                                request: HyphenRequestSignInChallenge.Request(method: "firebase", token: idToken, chainName: chainName),
+                                publicKey: hyphenRecoveryPublicKey
+                            )
+                        )
+
+                        let challengeData = challengeRequest.challengeData
+                        guard let challengeDataSignature = HyphenCryptography.signDataWithRecoveryKey(challengeData.data(using: .utf8)!)?.hexEncodedString() else {
+                            HyphenLogger.shared.logger.error("Signing challenge data with recovery key failed.")
+                            return
+                        }
+
+                        let challengeRespondRequest = try await HyphenNetworking.shared.signInChallengeRespond(
+                            payload: HyphenRequestSignInChallengeRespond(
+                                challengeType: "recoveryKey",
+                                challengeData: challengeData,
+                                deviceKey: HyphenRequestSignInChallengeRespond.DeviceKey(signature: challengeDataSignature)
+                            )
+                        )
+
+                        _account = challengeRespondRequest.account
+                        Hyphen.shared.saveCredential(challengeRespondRequest.credentials)
+                    }
+                }
             } else {
                 HyphenLogger.shared.logger.info("Request authenticate challenge...")
 

@@ -13,18 +13,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         HyphenAuthenticateAppDelegate.shared.application(application)
         HyphenUI.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
 
+        UNUserNotificationCenter.current().delegate = self
+
+        application.registerForRemoteNotifications()
+
         // Push notification
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, error in
             if let error {
                 print(error)
                 print("===== [HyphenSDKDemo] remote notification permission isGranted = false")
-            } else {
-                DispatchQueue.main.async {
-                    UNUserNotificationCenter.current().delegate = self
-                    application.registerForRemoteNotifications()
-
-                    print("===== [HyphenSDKDemo] remote notification permission isGranted = true")
-                }
             }
         }
 
