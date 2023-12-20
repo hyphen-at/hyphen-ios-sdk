@@ -100,6 +100,8 @@ public final class HyphenUI: NSObject {
 
         var loadingIndicator: HyphenTopLoadingIndicator? = nil
 
+        var accountRecoveryAlertController: UIAlertController? = nil
+
         Bus<HyphenEventBusType>.register(self) { event in
             switch event {
             case let .show2FAWaitingProgressModal(isShow: isShow):
@@ -110,6 +112,21 @@ public final class HyphenUI: NSObject {
                     loadingIndicator?.removeFromSuperview()
                     loadingIndicator = nil
                 }
+            case let .showAccountRecoveryMethodModal:
+                accountRecoveryAlertController = UIAlertController(title: "Account Recovery", message: "Select your account recovery method", preferredStyle: .actionSheet)
+
+                accountRecoveryAlertController?.addAction(UIAlertAction(title: "Two-Factor Authentication", style: .default, handler: { _ in
+                    Bus<HyphenEventBusType>.post(.selectAccountRecoveryMethod2FA)
+                }))
+
+                if !HyphenCryptography.getRecoveryPublicKeyHex().isEmpty {
+                    print(HyphenCryptography.getRecoveryPublicKeyHex())
+                    accountRecoveryAlertController?.addAction(UIAlertAction(title: "Recovery Key in iCloud", style: .default, handler: { _ in
+                        Bus<HyphenEventBusType>.post(.selectAccountRecoveryMethodRecoveryKey)
+                    }))
+                }
+
+                UIApplication.shared.hyphensdk_currentKeyWindowPresentedController?.present(accountRecoveryAlertController!, animated: true)
             default:
                 break
             }
