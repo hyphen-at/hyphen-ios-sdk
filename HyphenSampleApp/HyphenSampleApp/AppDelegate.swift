@@ -17,6 +17,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
         application.registerForRemoteNotifications()
 
+        HyphenCryptography.deleteKey()
+
         // Push notification
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, error in
             if let error {

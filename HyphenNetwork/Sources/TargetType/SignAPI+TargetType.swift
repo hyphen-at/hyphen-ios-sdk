@@ -13,6 +13,8 @@ extension SignAPI: TargetType {
 
     public var path: String {
         switch self {
+        case .getPayerAddress:
+            "/sign/v1/cadence"
         case .signTransactionWithServerKey(message: _):
             "/sign/v1/cadence/transaction"
         case .signTransactionWithPayMasterKey(message: _):
@@ -21,7 +23,12 @@ extension SignAPI: TargetType {
     }
 
     public var method: Moya.Method {
-        .post
+        switch self {
+        case .getPayerAddress:
+            .get
+        default:
+            .post
+        }
     }
 
     public var sampleData: Data {
@@ -33,6 +40,8 @@ extension SignAPI: TargetType {
 
     public var task: Task {
         switch self {
+        case .getPayerAddress:
+            return .requestPlain
         case let .signTransactionWithServerKey(message: message):
             let json = try! JSONEncoder().encode(HyphenRequestSign(message: message))
             return .requestData(json)

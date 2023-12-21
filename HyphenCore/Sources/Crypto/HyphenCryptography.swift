@@ -137,7 +137,7 @@ public class HyphenCryptography: NSObject {
             kSecAttrApplicationTag as String: privRecoveryTag,
             kSecAttrKeyClass as String: kSecAttrKeyClassPrivate,
             kSecReturnRef as String: true,
-            kSecAttrSynchronizable as String: true,
+            kSecAttrSynchronizable as String: kCFBooleanTrue,
         ]
 
         var result: CFTypeRef?
@@ -145,7 +145,7 @@ public class HyphenCryptography: NSObject {
         if status != errSecSuccess {
             HyphenLogger.shared.logger.error("priv key get failed.. generate new key")
             SecItemDelete(query as CFDictionary)
-            generateKey()
+            generateRecoveryKey()
             let new = SecItemCopyMatching(query as CFDictionary, &result)
             print(new)
         }

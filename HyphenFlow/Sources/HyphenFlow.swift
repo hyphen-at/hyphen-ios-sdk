@@ -8,6 +8,44 @@ public final class HyphenFlow: NSObject {
 
     override private init() {}
 
+    @_spi(HyphenInternal)
+    public func makeRecoveryKeySignedTransactionPayloadWithoutArguments(hyphenFlowCadence: HyphenFlowCadence) async throws -> Flow.Transaction {
+        configureFlow()
+
+        let hyphenAccount = try await HyphenNetworking.shared.getMyAccount()
+        let flowAddress = Flow.Address(hex: hyphenAccount.addresses.first!.address)
+        let keys = try await HyphenNetworking.shared.getKeys()
+        let rocoveryKeyIndex = keys.first { $0.publicKey == HyphenCryptography.getRecoveryPublicKeyHex() }!.keyIndex
+        let payerAccount = try await HyphenNetworking.shared.getPayerAddress()
+
+        let recoveryKeySigner = HyphenRecoveryKeySigner(address: flowAddress, keyIndex: rocoveryKeyIndex)
+        let serverKeySigner = HyphenServerKeySigner(address: flowAddress)
+        let payMasterKeySigner = HyphenPayMasterKeySigner(address: Flow.Address(hex: payerAccount.0), keyIndex: payerAccount.1)
+
+        let signers: [FlowSigner] = [serverKeySigner, recoveryKeySigner, payMasterKeySigner]
+
+        var unsignedTx = try! await flow.buildTransaction {
+            cadence {
+                hyphenFlowCadence.cadence
+            }
+
+            proposer {
+                Flow.TransactionProposalKey(address: recoveryKeySigner.address, keyIndex: recoveryKeySigner.keyIndex)
+            }
+
+            payer {
+                payMasterKeySigner.address
+            }
+
+            authorizers {
+                recoveryKeySigner.address
+            }
+        }
+
+        let signedTx = try await unsignedTx.sign(signers: signers)
+        return signedTx
+    }
+
     public func makeSignedTransactionPayloadWithoutArguments(hyphenFlowCadence: HyphenFlowCadence) async throws -> Flow.Transaction {
         configureFlow()
 
@@ -15,10 +53,11 @@ public final class HyphenFlow: NSObject {
         let flowAddress = Flow.Address(hex: hyphenAccount.addresses.first!.address)
         let keys = try await HyphenNetworking.shared.getKeys()
         let deviceKeyIndex = keys.first { $0.publicKey == HyphenCryptography.getPublicKeyHex() }!.keyIndex
+        let payerAccount = try await HyphenNetworking.shared.getPayerAddress()
 
         let deviceKeySigner = HyphenDeviceKeySigner(address: flowAddress, keyIndex: deviceKeyIndex)
         let serverKeySigner = HyphenServerKeySigner(address: flowAddress)
-        let payMasterKeySigner = HyphenPayMasterKeySigner()
+        let payMasterKeySigner = HyphenPayMasterKeySigner(address: Flow.Address(hex: payerAccount.0), keyIndex: payerAccount.1)
 
         let signers: [FlowSigner] = [serverKeySigner, deviceKeySigner, payMasterKeySigner]
 
@@ -51,10 +90,11 @@ public final class HyphenFlow: NSObject {
         let flowAddress = Flow.Address(hex: hyphenAccount.addresses.first!.address)
         let keys = try await HyphenNetworking.shared.getKeys()
         let deviceKeyIndex = keys.first { $0.publicKey == HyphenCryptography.getPublicKeyHex() }!.keyIndex
+        let payerAccount = try await HyphenNetworking.shared.getPayerAddress()
 
         let deviceKeySigner = HyphenDeviceKeySigner(address: flowAddress, keyIndex: deviceKeyIndex)
         let serverKeySigner = HyphenServerKeySigner(address: flowAddress)
-        let payMasterKeySigner = HyphenPayMasterKeySigner()
+        let payMasterKeySigner = HyphenPayMasterKeySigner(address: Flow.Address(hex: payerAccount.0), keyIndex: payerAccount.1)
 
         let signers: [FlowSigner] = [serverKeySigner, deviceKeySigner, payMasterKeySigner]
 

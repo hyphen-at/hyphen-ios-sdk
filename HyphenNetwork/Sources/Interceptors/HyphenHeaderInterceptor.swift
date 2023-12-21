@@ -14,7 +14,7 @@ final class HyphenHeaderInterceptor: RequestInterceptor {
 
         if !tempAccessToken.isEmpty {
             mutableUrlRequest.setValue("Bearer \(tempAccessToken)", forHTTPHeaderField: "Authorization")
-            Hyphen.shared.clearEphemeralAccessToken()
+            // Hyphen.shared.clearEphemeralAccessToken()
         } else if Hyphen.shared.isCredentialExist() {
             let credential = Hyphen.shared.getCredential()
             mutableUrlRequest.setValue("Bearer \(credential.accessToken)", forHTTPHeaderField: "Authorization")

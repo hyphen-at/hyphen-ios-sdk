@@ -1,8 +1,10 @@
 import AuthenticationServices
 import FirebaseAuth
 import FirebaseMessaging
+import Flow
 import Foundation
 @_spi(HyphenInternal) import HyphenCore
+@_spi(HyphenInternal) import HyphenFlow
 import HyphenNetwork
 import Moya
 import RealEventsBus
@@ -100,16 +102,48 @@ public final class HyphenAuthenticate: NSObject {
                             return
                         }
 
+                        HyphenCryptography.generateKey()
+                        guard let hyphenUserKey = try await getHyphenUserKey() else {
+                            HyphenLogger.shared.logger.critical("Hyphen SDK error occured. unexpected error. getHyphenUserKey() == nil")
+                            throw HyphenSdkError.internalSdkError
+                        }
+
                         let challengeRespondRequest = try await HyphenNetworking.shared.signInChallengeRespond(
                             payload: HyphenRequestSignInChallengeRespond(
                                 challengeType: "recoveryKey",
                                 challengeData: challengeData,
-                                deviceKey: HyphenRequestSignInChallengeRespond.DeviceKey(signature: challengeDataSignature)
+                                deviceKey: nil,
+                                recoveryKey: .init(signature: challengeDataSignature, newDeviceKey: hyphenUserKey)
                             )
                         )
 
                         _account = challengeRespondRequest.account
                         Hyphen.shared.saveCredential(challengeRespondRequest.credentials)
+
+                        let newDeviceKeyTx = try await HyphenFlow.shared.makeRecoveryKeySignedTransactionPayloadWithoutArguments(
+                            hyphenFlowCadence: .init(
+                                cadence: """
+                                transaction {
+                                    prepare(signer: AuthAccount) {
+                                        let key = PublicKey(
+                                            publicKey: "\(HyphenCryptography.getPublicKeyHex())".decodeHex(),
+                                            signatureAlgorithm: SignatureAlgorithm.ECDSA_P256
+                                        )
+                                        // Set weight of each key as 500 since quorum is 1000. It enables 2-of-N multisig
+                                        signer.keys.add(
+                                            publicKey: key,
+                                            hashAlgorithm: HashAlgorithm.SHA2_256,
+                                            weight: 500.0
+                                        )
+                                    }
+                                }
+                                """
+                            )
+                        )
+                        let newDeviceKeyTxId = try await flow.sendTransaction(transaction: newDeviceKeyTx)
+                        HyphenLogger.shared.logger.info("[HyphenNewDeviceKeyTxId] \(newDeviceKeyTxId)")
+                    } catch {
+                        print(error)
                     }
                 }
             } else {
@@ -139,7 +173,8 @@ public final class HyphenAuthenticate: NSObject {
                         payload: HyphenRequestSignInChallengeRespond(
                             challengeType: "deviceKey",
                             challengeData: challengeData,
-                            deviceKey: HyphenRequestSignInChallengeRespond.DeviceKey(signature: challengeDataSignature)
+                            deviceKey: HyphenRequestSignInChallengeRespond.DeviceKey(signature: challengeDataSignature),
+                            recoveryKey: nil
                         )
                     )
 
@@ -249,6 +284,28 @@ public final class HyphenAuthenticate: NSObject {
 
         let recoveryPublicKeyHex = HyphenCryptography.getRecoveryPublicKeyHex()
         HyphenLogger.shared.logger.info("[RecoveryPublicKey] \(HyphenCryptography.getRecoveryPublicKeyHex())")
+
+        let recoveryAddKeyTx = try await HyphenFlow.shared.makeSignedTransactionPayloadWithoutArguments(
+            hyphenFlowCadence: .init(cadence: """
+                transaction {
+                    prepare(signer: AuthAccount) {
+                        let key = PublicKey(
+                            publicKey: "\(HyphenCryptography.getRecoveryPublicKeyHex())".decodeHex(),
+                            signatureAlgorithm: SignatureAlgorithm.ECDSA_P256
+                        )
+                        // Set weight of each key as 500 since quorum is 1000. It enables 2-of-N multisig
+                        signer.keys.add(
+                            publicKey: key,
+                            hashAlgorithm: HashAlgorithm.SHA2_256,
+                            weight: 500.0
+                        )
+                    }
+                }
+            """)
+        )
+
+        let recoveryAddKeyTxId = try await flow.sendTransaction(transaction: recoveryAddKeyTx)
+        HyphenLogger.shared.logger.info("[AddRecoveryKeyTxId] \(recoveryAddKeyTxId)")
 
         try await HyphenNetworking.shared.registerRecoveryKey(recoveryPublicKeyHex)
     }

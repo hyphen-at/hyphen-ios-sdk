@@ -1,10 +1,9 @@
-import CryptoKit
 import Flow
 import Foundation
 @_spi(HyphenInternal) import HyphenCore
 import HyphenNetwork
 
-public final class HyphenPayMasterKeySigner: FlowSigner {
+public final class HyphenRecoveryKeySigner: FlowSigner {
     private let _address: Flow.Address
     private let _keyIndex: Int
 
@@ -22,9 +21,7 @@ public final class HyphenPayMasterKeySigner: FlowSigner {
     }
 
     public func sign(transaction _: Flow.Transaction, signableData: Data) async throws -> Data {
-        HyphenLogger.shared.logger.info("HyphenPayMasterKey signing request")
-
-        let signResult = try await HyphenNetworking.shared.signTransactionWithPayMasterKey(message: signableData.hexValue)
-        return Data(hexString: signResult.signature.signature)!
+        HyphenLogger.shared.logger.info("HyphenRecoveryKey signing request")
+        return HyphenCryptography.signDataWithRecoveryKey(signableData)!
     }
 }
