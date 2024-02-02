@@ -57,6 +57,7 @@ let package = Package(
             name: "HyphenAuthenticate",
             dependencies: [
                 .target(name: "HyphenCore"),
+                .target(name: "HyphenFlow"),
                 .target(name: "HyphenNetwork"),
                 .product(name: "FirebaseAuth", package: "firebase-ios-sdk"),
                 .product(name: "FirebaseMessaging", package: "firebase-ios-sdk"),
